@@ -37,6 +37,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setMobileNavOpen(false);
   }, [path]);
 
+  const isNotebookView = path.startsWith('/notebook') && !path.includes('/studio') && !path.includes('/audio');
+
   const navItem = (href: string, icon: React.ReactNode, label: string) => {
     const isActive = path === href;
     return (
@@ -70,13 +72,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand */}
+        {/* Brand: Clicking Logo Navigates to Landing Page (/) */}
         <div className="flex items-center justify-between pb-6 mb-2 border-b border-[#E8E6DF]/80">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <span className="w-5 h-5 bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold rounded-sm tracking-tighter shadow-xs">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 group"
+            title="Synora Home (Landing Page)"
+          >
+            <span className="w-5 h-5 bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:scale-105 transition-transform">
               ■
             </span>
-            <span className="font-bold tracking-tight text-base text-[#1A1A1A]">SYNORA</span>
+            <span className="font-bold tracking-tight text-base text-[#1A1A1A] group-hover:text-black transition-colors">
+              SYNORA
+            </span>
           </Link>
           <button
             onClick={() => setMobileNavOpen(false)}
@@ -154,9 +162,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 md:ml-64 flex flex-col min-w-0">
+      <div className="flex-1 md:ml-64 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Bar */}
-        <header className="h-16 px-6 sm:px-8 border-b border-[#E8E6DF] bg-[#FBFBFA]/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-30">
+        <header className="h-16 px-6 sm:px-8 border-b border-[#E8E6DF] bg-[#FBFBFA]/90 backdrop-blur-md flex items-center justify-between shrink-0 z-30">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -168,8 +176,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center gap-2 text-xs text-[#7A7C75]">
               <Sparkles size={13} className="text-[#8C8E85]" />
-              <span className="hidden sm:inline">Synora Studio</span>
-              <span>·</span>
+              <Link href="/" className="hover:text-[#111] transition-colors">
+                Synora
+              </Link>
+              <span>/</span>
+              <Link href="/dashboard" className="hover:text-[#111] transition-colors">
+                Workspace
+              </Link>
+              <span>/</span>
               <span className="font-medium text-[#1E201D]">
                 {path.startsWith('/notebook')
                   ? 'Notebook'
@@ -195,8 +209,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Content Body */}
-        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        {/* Content Body: If notebook, full-bleed zero-page-scroll; otherwise standard scroll container */}
+        <main
+          className={`flex-1 min-w-0 ${
+            isNotebookView
+              ? 'h-[calc(100vh-64px)] overflow-hidden flex flex-col p-0'
+              : 'overflow-y-auto p-4 sm:p-8 max-w-7xl w-full mx-auto'
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

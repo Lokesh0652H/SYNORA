@@ -2,32 +2,34 @@
 
 import React, { useEffect, useRef } from 'react';
 
-// Character sets for shading density
-const GLYPHS = ['@', '%', '#', '8', 'S', 'X', 'x', 's', 't', 'o', '*', ':', '·', ' '];
+// Color palette matching the stackedlol aesthetic (refined pastels, slates, and charcoals)
+const TILE_PALETTE = [
+  { bg: 'rgba(122, 166, 158, 0.85)', text: '#1A332E', border: 'rgba(92, 136, 128, 0.4)' }, // Seafoam teal
+  { bg: 'rgba(154, 142, 178, 0.85)', text: '#261F33', border: 'rgba(124, 112, 148, 0.4)' }, // Lavender purple
+  { bg: 'rgba(120, 146, 175, 0.85)', text: '#192C3D', border: 'rgba(95, 120, 148, 0.4)' },  // Slate blue
+  { bg: 'rgba(196, 168, 122, 0.85)', text: '#382B14', border: 'rgba(166, 138, 92, 0.4)' },  // Warm sand/gold
+  { bg: 'rgba(188, 138, 148, 0.85)', text: '#3B1F25', border: 'rgba(158, 108, 118, 0.4)' }, // Dusty rose
+  { bg: 'rgba(45, 50, 58, 0.92)',    text: '#E5E8EB', border: 'rgba(25, 28, 33, 0.6)' },    // Dark charcoal
+  { bg: 'rgba(78, 86, 98, 0.88)',    text: '#E8ECF0', border: 'rgba(55, 62, 72, 0.5)' },    // Mid slate
+  { bg: 'rgba(232, 235, 228, 0.92)', text: '#2D332A', border: 'rgba(202, 205, 198, 0.6)' }, // Pale silver belly
+];
 
-interface Segment {
-  x: number;
-  y: number;
-  width: number;
-}
+const GLYPHS = ['S', 'X', '%', 't', '8', '@', 's', 'x', 'o', '*', '#', ':'];
 
 interface Creature {
-  type: 'great_white' | 'hammerhead' | 'small_fish';
+  type: 'hammerhead' | 'great_white' | 'small_fish';
   x: number;
   y: number;
   vx: number;
   vy: number;
   heading: number;
   length: number;
-  bodyWidth: number;
   phase: number;
   speed: number;
-  history: { x: number; y: number; angle: number }[];
 }
 
 export default function AsciiSharkMotion({ className = '' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -1000, y: -1000 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,74 +49,65 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
       height = rect.height;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resize();
     window.addEventListener('resize', resize);
 
-    // Initialize 3 creatures matching stackedlol demo
+    // Three distinct creatures
     const creatures: Creature[] = [
-      // 1. Large Tiger / Great White shark
-      {
-        type: 'great_white',
-        x: width * 0.45,
-        y: height * 0.65,
-        vx: 0.8,
-        vy: -0.2,
-        heading: -0.3,
-        length: 220,
-        bodyWidth: 46,
-        phase: 0,
-        speed: 1.1,
-        history: [],
-      },
-      // 2. Hammerhead shark
       {
         type: 'hammerhead',
         x: width * 0.72,
-        y: height * 0.3,
+        y: height * 0.28,
         vx: -0.65,
-        vy: 0.25,
-        heading: 2.7,
-        length: 190,
-        bodyWidth: 38,
-        phase: 1.5,
-        speed: 1.0,
-        history: [],
+        vy: 0.22,
+        heading: 2.8,
+        length: 260,
+        phase: 0.5,
+        speed: 0.95,
       },
-      // 3. Small agile pilot fish
+      {
+        type: 'great_white',
+        x: width * 0.38,
+        y: height * 0.68,
+        vx: 0.85,
+        vy: -0.18,
+        heading: -0.25,
+        length: 300,
+        phase: 2.2,
+        speed: 1.1,
+      },
       {
         type: 'small_fish',
-        x: width * 0.2,
-        y: height * 0.25,
-        vx: 0.9,
+        x: width * 0.18,
+        y: height * 0.22,
+        vx: 1.1,
         vy: 0.35,
-        heading: 0.4,
-        length: 85,
-        bodyWidth: 16,
-        phase: 3.0,
-        speed: 1.5,
-        history: [],
+        heading: 0.32,
+        length: 120,
+        phase: 4.0,
+        speed: 1.45,
       },
     ];
 
-    // Background floating ASCII particles
-    const particles = Array.from({ length: 48 }).map(() => ({
+    // Background drifting ASCII bubbles/particles
+    const bubbles = Array.from({ length: 42 }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      char: ['·', ':', '+', '~', '°', '·'][Math.floor(Math.random() * 6)],
-      speed: 0.15 + Math.random() * 0.25,
-      alpha: 0.12 + Math.random() * 0.22,
+      char: ['o', '°', '·', '+', '~'][Math.floor(Math.random() * 5)],
+      speed: 0.2 + Math.random() * 0.3,
+      alpha: 0.15 + Math.random() * 0.25,
     }));
 
     const render = () => {
-      time += 0.025;
+      time += 0.022;
       ctx.clearRect(0, 0, width, height);
 
-      // 1. Draw subtle background dot grid
+      // 1. Subtle background grid
       const gridSize = 24;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.035)';
       for (let gx = 0; gx < width; gx += gridSize) {
         for (let gy = 0; gy < height; gy += gridSize) {
           ctx.fillRect(gx, gy, 1, 1);
@@ -123,123 +116,180 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
 
       // 2. Ambient drifting particles
       ctx.font = '10px ui-monospace, SFMono-Regular, Consolas, monospace';
-      particles.forEach((p) => {
-        p.x += p.speed;
-        if (p.x > width + 20) p.x = -20;
-        ctx.fillStyle = `rgba(130, 135, 125, ${p.alpha})`;
-        ctx.fillText(p.char, p.x, p.y + Math.sin(time + p.x * 0.01) * 4);
+      bubbles.forEach((b) => {
+        b.x += b.speed;
+        if (b.x > width + 20) b.x = -20;
+        ctx.fillStyle = `rgba(140, 145, 138, ${b.alpha})`;
+        ctx.fillText(b.char, b.x, b.y + Math.sin(time * 1.5 + b.x * 0.02) * 5);
       });
 
-      // 3. Update and draw each creature
+      // 3. Draw each creature with 2D tile body silhouettes
       creatures.forEach((c) => {
-        // Natural gentle turning and cruising
         c.phase += 0.045 * c.speed;
-        const turnWiggle = Math.sin(time * 0.6 + c.phase) * 0.012;
-        c.heading += turnWiggle;
+        // Natural gentle steering
+        c.heading += Math.sin(time * 0.7 + c.phase) * 0.012;
 
-        // Gentle steer back to canvas bounds
-        const margin = 80;
-        if (c.x < margin) c.heading += 0.02;
-        if (c.x > width - margin) c.heading -= 0.02;
-        if (c.y < margin) c.heading += 0.02;
-        if (c.y > height - margin) c.heading -= 0.02;
+        // Keep inside canvas bounds softly
+        const pad = 120;
+        if (c.x < pad) c.heading += 0.02;
+        if (c.x > width - pad) c.heading -= 0.02;
+        if (c.y < pad) c.heading += 0.02;
+        if (c.y > height - pad) c.heading -= 0.02;
 
         c.vx = Math.cos(c.heading) * c.speed;
         c.vy = Math.sin(c.heading) * c.speed;
         c.x += c.vx;
         c.y += c.vy;
 
-        // Wrap around bounds softly
+        // Wrap around bounds
         if (c.x < -c.length) c.x = width + c.length;
         if (c.x > width + c.length) c.x = -c.length;
         if (c.y < -c.length) c.y = height + c.length;
         if (c.y > height + c.length) c.y = -c.length;
 
         // Spine segments computation
-        const numSegments = c.type === 'small_fish' ? 14 : 26;
-        const segDist = c.length / numSegments;
+        const numSegs = c.type === 'small_fish' ? 20 : 30;
+        const cell = c.type === 'small_fish' ? 9 : 11;
+        const segLen = c.length / numSegs;
 
-        // Keep spine history
-        if (c.history.length === 0) {
-          for (let i = 0; i < numSegments; i++) {
-            c.history.push({
-              x: c.x - Math.cos(c.heading) * i * segDist,
-              y: c.y - Math.sin(c.heading) * i * segDist,
-              angle: c.heading,
-            });
-          }
+        // Precompute spine points with sinusoidal traveling wave
+        const spine: { x: number; y: number; angle: number }[] = [];
+        let currX = c.x;
+        let currY = c.y;
+
+        for (let i = 0; i < numSegs; i++) {
+          const t = i / numSegs;
+          // Realistic swimming wave: amplitude grows from head to tail
+          const waveAmp = Math.sin(c.phase - i * 0.36) * Math.pow(t, 1.25) * (c.length * 0.2);
+          const segAngle = c.heading + Math.sin(c.phase - i * 0.3) * 0.16 * Math.pow(t, 1.1);
+
+          const normX = -Math.sin(segAngle);
+          const normY = Math.cos(segAngle);
+
+          spine.push({
+            x: currX + normX * waveAmp,
+            y: currY + normY * waveAmp,
+            angle: segAngle,
+          });
+
+          currX += Math.cos(c.heading) * segLen;
+          currY += Math.sin(c.heading) * segLen;
         }
 
-        // Head position
-        c.history[0] = { x: c.x, y: c.y, angle: c.heading };
-
-        // Inverse kinematics / trailing spine with sinusoidal tail wave
-        for (let i = 1; i < numSegments; i++) {
-          const prev = c.history[i - 1];
-          const curr = c.history[i];
-          const tailWave = Math.sin(c.phase - i * 0.38) * (i / numSegments) * (c.bodyWidth * 0.42);
-
-          const dx = curr.x - prev.x;
-          const dy = curr.y - prev.y;
-          const targetAngle = Math.atan2(dy, dx);
-          const angle = targetAngle;
-
-          curr.x = prev.x + Math.cos(angle) * segDist;
-          curr.y = prev.y + Math.sin(angle) * segDist + tailWave * 0.15;
-          curr.angle = angle;
-        }
-
-        // Render Creature Body in ASCII Grid
-        const cell = c.type === 'small_fish' ? 7 : 9;
-        ctx.font = `600 ${cell}px ui-monospace, SFMono-Regular, Consolas, monospace`;
+        // Draw 2D bodily tiles along spine
+        ctx.font = `bold ${cell - 2}px ui-monospace, SFMono-Regular, Consolas, monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Draw segments along spine
-        for (let i = 0; i < numSegments; i++) {
-          const seg = c.history[i];
-          const t = i / numSegments;
+        for (let i = 0; i < numSegs; i++) {
+          const seg = spine[i];
+          const t = i / numSegs;
 
-          // Body thickness profile
-          let halfWidth = 0;
+          // Silhouette half-width (in cells)
+          let bodyHw = 0;
+          let pecHw = 0;
+          let isHammer = false;
+
           if (c.type === 'hammerhead') {
-            if (i === 0) halfWidth = c.bodyWidth * 0.95; // Hammerhead cephalofoil
-            else if (i === 1) halfWidth = c.bodyWidth * 0.85;
-            else halfWidth = Math.sin(t * Math.PI) * (c.bodyWidth * 0.55);
+            if (i <= 2) {
+              bodyHw = 6; // Wide Hammerhead T-Bar!
+              isHammer = true;
+            } else if (i <= 4) {
+              bodyHw = 2; // Neck
+            } else if (i <= 14) {
+              bodyHw = Math.round(3 + Math.sin(((i - 4) / 10) * Math.PI) * 2.5);
+              if (i >= 8 && i <= 11) pecHw = Math.round((11 - Math.abs(i - 9.5) * 2) * 0.7);
+            } else if (i <= 23) {
+              bodyHw = Math.max(1, Math.round(3.5 - (i - 14) * 0.28));
+            } else {
+              // Crescent tail fin
+              const tailT = (i - 24) / 5;
+              bodyHw = Math.max(1, Math.round(tailT * 5));
+            }
           } else if (c.type === 'great_white') {
-            halfWidth = Math.sin(Math.sqrt(t) * Math.PI) * (c.bodyWidth * 0.6);
-            // Dorsal fin peak around segment 6-10
-            if (i >= 6 && i <= 10) halfWidth += 6;
+            if (i <= 4) {
+              bodyHw = Math.max(1, Math.round(i * 1.1)); // Pointed snout
+            } else if (i <= 15) {
+              bodyHw = Math.round(4 + Math.sin(((i - 4) / 11) * Math.PI) * 2.8);
+              if (i >= 8 && i <= 12) pecHw = Math.round((12 - Math.abs(i - 10) * 2) * 0.8);
+            } else if (i <= 23) {
+              bodyHw = Math.max(1, Math.round(4.2 - (i - 15) * 0.35));
+            } else {
+              // Broad caudal tail fin
+              const tailT = (i - 24) / 5;
+              bodyHw = Math.max(1, Math.round(tailT * 5.2));
+            }
           } else {
-            halfWidth = Math.sin(t * Math.PI) * (c.bodyWidth * 0.5);
+            // Agile pilot fish
+            if (i <= 3) bodyHw = Math.max(1, i);
+            else if (i <= 11) bodyHw = Math.round(2.5 + Math.sin(((i - 3) / 8) * Math.PI) * 1.5);
+            else if (i <= 15) bodyHw = Math.max(1, Math.round(2.5 - (i - 11) * 0.35));
+            else bodyHw = Math.max(1, Math.round(((i - 15) / 4) * 3));
           }
 
-          // Perpendicular normal to spine
-          const normAngle = seg.angle + Math.PI / 2;
-          const nx = Math.cos(normAngle);
-          const ny = Math.sin(normAngle);
+          const totalHw = Math.max(bodyHw, bodyHw + pecHw);
+          const normX = -Math.sin(seg.angle);
+          const normY = Math.cos(seg.angle);
 
-          const lateralCount = Math.max(1, Math.round(halfWidth / cell));
+          for (let lat = -totalHw; lat <= totalHw; lat++) {
+            const isBody = Math.abs(lat) <= bodyHw;
+            const isPec = pecHw > 0 && Math.abs(lat) > bodyHw && Math.abs(lat) <= bodyHw + pecHw;
+            const isTail = i >= numSegs - 6 && Math.abs(lat) >= 1;
 
-          for (let lat = -lateralCount; lat <= lateralCount; lat++) {
-            const px = seg.x + nx * (lat * cell);
-            const py = seg.y + ny * (lat * cell);
+            if (!isBody && !isPec && !isTail) continue;
 
-            // Distance from center axis determines glyph density and shading
-            const distRatio = Math.abs(lat) / Math.max(1, lateralCount);
-            const glyphIdx = Math.floor(distRatio * (GLYPHS.length - 3));
-            const char = GLYPHS[Math.min(glyphIdx, GLYPHS.length - 2)];
+            // Center of this tile
+            const tx = seg.x + normX * (lat * cell);
+            const ty = seg.y + normY * (lat * cell);
 
-            // Shading color: subtle charcoal/slate with slight opacity variation
-            const alpha = 0.55 + (1 - distRatio) * 0.35;
-            // Tint: slightly cooler for hammerhead, neutral charcoal for great white
-            const grayVal = Math.floor(65 + distRatio * 75);
-            ctx.fillStyle = `rgba(${grayVal}, ${grayVal + (c.type === 'hammerhead' ? 6 : 2)}, ${
-              grayVal + 8
-            }, ${alpha})`;
+            if (tx < -cell || tx > width + cell || ty < -cell || ty > height + cell) continue;
 
-            // Draw character
-            ctx.fillText(char, px, py);
+            // Color selection based on region
+            let paletteItem = TILE_PALETTE[0];
+            const distRatio = Math.abs(lat) / Math.max(1, totalHw);
+
+            if (isHammer && Math.abs(lat) >= 4) {
+              // Eyes on hammerhead tips: dark charcoal tile
+              paletteItem = TILE_PALETTE[5];
+            } else if (isPec || isTail) {
+              // Fin tips: pastel teal, lavender, or dusty rose
+              const finColorIdx = (i + Math.abs(lat)) % 5;
+              paletteItem = TILE_PALETTE[finColorIdx];
+            } else if (lat > 1) {
+              // Pale belly side
+              paletteItem = (i % 2 === 0) ? TILE_PALETTE[7] : TILE_PALETTE[0];
+            } else if (lat < -1) {
+              // Dorsal/darker flank
+              paletteItem = (i % 3 === 0) ? TILE_PALETTE[5] : TILE_PALETTE[6];
+            } else {
+              // Mid-body chromatic variety
+              const cIdx = (i * 2 + Math.abs(lat) * 3) % TILE_PALETTE.length;
+              paletteItem = TILE_PALETTE[cIdx];
+            }
+
+            // Draw rounded square tile
+            const r = 2.5;
+            const sz = cell - 1.5;
+            const x0 = tx - sz / 2;
+            const y0 = ty - sz / 2;
+
+            ctx.save();
+            ctx.fillStyle = paletteItem.bg;
+            ctx.strokeStyle = paletteItem.border;
+            ctx.lineWidth = 0.8;
+
+            ctx.beginPath();
+            ctx.roundRect(x0, y0, sz, sz, r);
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw ASCII glyph inside tile
+            const charIdx = (i * 7 + Math.abs(lat) * 5) % GLYPHS.length;
+            const glyph = GLYPHS[charIdx];
+
+            ctx.fillStyle = paletteItem.text;
+            ctx.fillText(glyph, tx, ty + 0.5);
+            ctx.restore();
           }
         }
       });
@@ -249,20 +299,9 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
 
     render();
 
-    const handlePointerMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-    };
-
-    window.addEventListener('mousemove', handlePointerMove);
-
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handlePointerMove);
     };
   }, []);
 
