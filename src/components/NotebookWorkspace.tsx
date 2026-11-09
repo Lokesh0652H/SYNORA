@@ -194,10 +194,10 @@ export default function NotebookWorkspace() {
 
   return (
     <AppShell>
-      {/* 100% Viewport-fitting Grid Container (No outer page scroll) */}
-      <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] bg-[#FBFBFA] overflow-hidden">
+      {/* Strict 100% Viewport-fitting Container (Absolute Zero Outer Page Scroll) */}
+      <div className="h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] bg-[#FBFBFA] overflow-hidden">
         {/* Main Chat Column */}
-        <section className="flex flex-col border-r border-[#EAE8E2] h-full min-w-0 overflow-hidden relative">
+        <section className="flex flex-col border-r border-[#EAE8E2] h-full min-h-0 min-w-0 overflow-hidden relative">
           {/* Header */}
           <div className="h-16 px-6 border-b border-[#EAE8E2] flex items-center justify-between bg-white/70 backdrop-blur-md z-20 shrink-0">
             <div>
@@ -225,12 +225,12 @@ export default function NotebookWorkspace() {
 
           {/* Empty State: Prompt bar centered right in viewport with zero scroll! */}
           {messages.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center relative px-4 overflow-hidden select-none">
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center text-center relative px-4 overflow-hidden select-none py-6">
               {/* Colorful 2D Tile ASCII Sharks in background */}
               <AsciiSharkMotion className="opacity-95" />
 
               {/* Centered Prompt Hero */}
-              <div className="relative z-10 w-full max-w-2xl px-4">
+              <div className="relative z-10 w-full max-w-2xl px-4 my-auto">
                 <div className="text-[10px] font-mono tracking-widest text-[#8C8E85] uppercase mb-2">
                   Research Space Ready
                 </div>
@@ -457,7 +457,7 @@ export default function NotebookWorkspace() {
         </section>
 
         {/* Right Sidebar: Sources & Studio Tools */}
-        <aside className="border-t lg:border-t-0 border-[#EAE8E2] bg-white/40 p-5 overflow-y-auto space-y-6 h-full">
+        <aside className="border-t lg:border-t-0 border-[#EAE8E2] bg-white/40 p-5 overflow-y-auto space-y-6 h-full max-h-[calc(100vh-64px)] shrink-0">
           {/* Header & Add Source Button */}
           <div>
             <div className="flex items-center justify-between mb-3">

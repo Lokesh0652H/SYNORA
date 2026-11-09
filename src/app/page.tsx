@@ -315,181 +315,188 @@ export default function LandingPage() {
                 Every query, chunk retrieval, and reasoning step is recorded with signed provenance. Hover or scroll past any capability on the right to see its corresponding record line light up.
               </p>
 
-              {/* Monospace Interactive Call Record Box */}
-              <div className="bg-[#FFFFFF] border border-[#DCDAD4] rounded-2xl p-5 sm:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] font-mono text-xs">
-                <div className="flex items-center justify-between pb-3 border-b border-[#EAE8E2] text-[#8C8E85]">
-                  <span className="font-semibold text-[#1A1A1A]">Call record</span>
-                  <span>call_7f3a2c · 2026-03-14 09:12Z</span>
+              {/* Monospace Interactive Call Record Box matching Image 3 with pixel precision */}
+              <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] font-mono text-[13px] leading-relaxed">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3 text-[#7A7C75]">
+                  <span className="font-mono text-[#555] text-sm font-normal">Call record</span>
+                  <span className="text-xs text-[#7A7C75]">call_7f3a2c · 2026-03-14 09:12Z</span>
                 </div>
 
-                <div className="py-4 space-y-2">
-                  {/* Model */}
+                <div className="border-t border-[#EFEFEA] my-3" />
+
+                {/* Key-Value Rows */}
+                <div className="py-2 space-y-2.5">
+                  {/* model */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('model');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'model'
-                        ? 'bg-black/[0.08] shadow-xs text-black font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-black/[0.05] text-black font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">model</span>
-                    <span className="text-[#1A1A1A] flex-1 truncate">gemini-2.5-flash · temp 0 · seed 1182</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">model</span>
+                    <span className="text-[#1E201D] flex-1">gemini-2.5-flash · temp 0 · seed 1182</span>
                   </div>
 
-                  {/* Prompt / Objective */}
+                  {/* prompt */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('prompt');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'prompt'
-                        ? 'bg-purple-100/70 border border-purple-200 text-purple-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-purple-50 text-purple-950 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">prompt</span>
-                    <span className="flex-1 truncate">sha256 3e1f...a9c2 (Autonomous plan)</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">prompt</span>
+                    <span className="text-[#1E201D] flex-1">sha256 3e1f...a9c2</span>
                   </div>
 
-                  {/* Context / GraphRAG */}
+                  {/* context */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('context');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'context'
-                        ? 'bg-blue-100/70 border border-blue-200 text-blue-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-blue-50 text-blue-950 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">context</span>
-                    <span className="flex-1 truncate">4 docs · 12 cross-notebook links · sha256 b71d...04ee</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">context</span>
+                    <span className="text-[#1E201D] flex-1">4 docs · sha256 b71d...04ee</span>
                   </div>
 
-                  {/* Policy / Contradiction */}
+                  {/* policy */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('policy');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'policy'
-                        ? 'bg-emerald-100/70 border border-emerald-200 text-emerald-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-teal-50 text-teal-950 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">policy</span>
-                    <span className="text-emerald-700 font-medium flex-1 truncate">
-                      pii · tone · scope — 3/3 passed (0 contradictions)
-                    </span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">policy</span>
+                    <span className="text-[#0D9488] font-medium flex-1">pii · tone · scope — 3/3 passed</span>
                   </div>
 
-                  {/* Runs In */}
+                  {/* runs in */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('runs');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'runs'
-                        ? 'bg-slate-200/80 text-slate-900 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-slate-100 text-slate-900 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">runs in</span>
-                    <span className="text-[#555] flex-1 truncate">managed cloud · eu-west (air-gapped VPC)</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">runs in</span>
+                    <span className="text-[#4A4D46] flex-1">managed cloud · eu-west</span>
                   </div>
 
-                  {/* Output */}
+                  {/* output */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('output');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'output'
-                        ? 'bg-amber-100/70 border border-amber-200 text-amber-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-amber-50 text-amber-950 font-bold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">output</span>
-                    <span className="text-[#1A1A1A] font-semibold flex-1 truncate">"Synthesis validated: Tier A rating"</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">output</span>
+                    <span className="font-bold text-[#111] flex-1">"Approve — tier B rating"</span>
                   </div>
 
-                  {/* Replay Line */}
+                  {/* replay row (pill container matching Image 3 with blue Replay button) */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('replay');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-center justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'replay' || replaying
-                        ? 'bg-emerald-100/70 border border-emerald-200 text-emerald-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-[#EEEDE8] border border-black/[0.08] shadow-xs'
+                        : 'bg-[#F4F4F0] border border-black/[0.04] hover:bg-[#EBEBE5]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">replay</span>
-                    <span className="flex-1 flex items-center justify-between font-medium">
-                      <span>{replaying ? 'replaying bit-for-bit...' : 'verified · zero divergence'}</span>
-                      <button
-                        onClick={triggerReplay}
-                        className="text-[10px] text-blue-600 hover:text-blue-800 underline flex items-center gap-1 shrink-0 ml-2"
-                      >
-                        <RefreshCw size={10} className={replaying ? 'animate-spin' : ''} />
-                        Replay
-                      </button>
-                    </span>
+                    <div className="flex items-center flex-1">
+                      <span className="w-24 shrink-0 text-[#7A7C75]">replay</span>
+                      <span className="text-[#1E201D] font-normal">
+                        {replaying ? 'replaying bit-for-bit...' : 'verified · zero divergence'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={triggerReplay}
+                      className="text-xs text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1.5 font-sans font-medium transition-colors ml-4 shrink-0"
+                    >
+                      <RefreshCw size={12} className={replaying ? 'animate-spin' : ''} />
+                      <span>Replay</span>
+                    </button>
                   </div>
 
-                  {/* Drift */}
+                  {/* drift */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('drift');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'drift'
-                        ? 'bg-purple-100/70 border border-purple-200 text-purple-950 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-purple-50 text-purple-950 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">drift</span>
-                    <span className="text-[#555] flex-1 truncate">none in 41 days (Watchtower active)</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">drift</span>
+                    <span className="text-[#4A4D46] flex-1">none in 41 days</span>
                   </div>
 
-                  {/* Signature */}
+                  {/* signature */}
                   <div
                     onMouseEnter={() => {
                       isHoveringRef.current = true;
                       setActiveHighlight('signature');
                     }}
                     onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-start justify-between p-1.5 rounded-lg transition-all duration-200 cursor-pointer ${
+                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                       activeHighlight === 'signature'
-                        ? 'bg-slate-200/80 border border-slate-300 text-slate-900 font-semibold'
-                        : 'hover:bg-black/[0.03]'
+                        ? 'bg-slate-100 text-slate-900 font-semibold'
+                        : 'hover:bg-black/[0.02]'
                     }`}
                   >
-                    <span className="text-[#8C8E85] w-20 shrink-0">signature</span>
-                    <span className="text-[#555] flex-1 truncate">ed25519 9c0b...7712</span>
+                    <span className="w-24 shrink-0 text-[#7A7C75]">signature</span>
+                    <span className="text-[#4A4D46] flex-1">ed25519 9c0b...7712</span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#EAE8E2] text-[11px] text-[#8C8E85] flex items-center gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                <div className="border-t border-[#EFEFEA] my-3" />
+
+                {/* Footer matching Image 3 */}
+                <div className="flex items-center gap-2 pt-1 text-xs text-[#4A4D46]">
+                  <CheckCircle2 size={15} className="text-[#059669] shrink-0" />
                   <span>Replayed six months later — the same output, byte for byte</span>
                 </div>
               </div>
