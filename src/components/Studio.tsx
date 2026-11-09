@@ -13,9 +13,12 @@ import {
   Network,
   Sparkles,
   Timer,
-  FileText,
   Copy,
   Check,
+  GitCompare,
+  Users2,
+  FileSpreadsheet,
+  Milestone,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import ShaderCard, { type ShaderTheme } from '@/components/ShaderCard';
@@ -30,60 +33,84 @@ const STUDIO_TOOLS: {
   badge: string;
 }[] = [
   {
-    kind: 'guide',
-    title: 'Study guide',
-    description: 'A comprehensive, structured syllabus of the key principles and findings.',
-    icon: BookOpenCheck,
+    kind: 'mindmap',
+    title: 'Knowledge Graph & Concepts',
+    description: 'Map core concepts, entities, and latent semantic relationships across all notebook sources.',
+    icon: Network,
     theme: 'blue',
+    badge: 'GraphRAG',
+  },
+  {
+    kind: 'contradiction',
+    title: 'Contradiction & Claim Verifier',
+    description: 'Identify conflicting statements, methodology clashes, or unsupported conclusions across documents.',
+    icon: GitCompare,
+    theme: 'ruby',
+    badge: 'Verification',
+  },
+  {
+    kind: 'perspectives',
+    title: 'Multiple AI Perspectives',
+    description: 'Analyze findings from 5 angles: Researcher, Critical Thinker, Analyst, Teacher, and Strategist.',
+    icon: Users2,
+    theme: 'purple',
+    badge: 'Debate Mode',
+  },
+  {
+    kind: 'action_report',
+    title: 'Research-to-Report',
+    description: 'Transform verified research into an executive decision-ready brief with cited recommendations.',
+    icon: FileSpreadsheet,
+    theme: 'amber',
+    badge: 'Action',
+  },
+  {
+    kind: 'action_roadmap',
+    title: 'Research-to-Roadmap',
+    description: 'Convert technical knowledge into a step-by-step phased execution roadmap with milestones.',
+    icon: Milestone,
+    theme: 'emerald',
+    badge: 'Roadmap',
+  },
+  {
+    kind: 'guide',
+    title: 'Comprehensive Study Guide',
+    description: 'A structured syllabus of foundational principles, empirical evidence, and key takeaways.',
+    icon: BookOpenCheck,
+    theme: 'slate',
     badge: 'Overview',
   },
   {
     kind: 'flashcards',
-    title: 'Flashcards',
-    description: 'Active recall cards with concise prompts and source-grounded answers.',
+    title: 'Dynamic Recall Flashcards',
+    description: 'Active recall cards with concise prompts and source-grounded answers for mastery.',
     icon: Brain,
-    theme: 'purple',
+    theme: 'magenta',
     badge: 'Recall',
   },
   {
     kind: 'quiz',
-    title: 'Self-assessment quiz',
-    description: 'Test your understanding with rigorous, citation-backed multiple choice and conceptual questions.',
+    title: 'Adaptive Assessment Quiz',
+    description: 'Test your understanding with rigorous, citation-backed multiple choice and conceptual queries.',
     icon: CircleHelp,
-    theme: 'emerald',
+    theme: 'blue',
     badge: 'Evaluation',
   },
   {
     kind: 'faq',
-    title: 'Frequently asked questions',
-    description: 'Clear answers to the most crucial and anticipated questions in the research.',
+    title: 'Authoritative Research FAQ',
+    description: 'Clear, concise answers to the most crucial and anticipated questions in the material.',
     icon: Sparkles,
     theme: 'amber',
     badge: 'Synthesis',
   },
   {
-    kind: 'mindmap',
-    title: 'Concept map',
-    description: 'Discover how the central entities, arguments, and data points connect.',
-    icon: Network,
-    theme: 'magenta',
-    badge: 'Topology',
-  },
-  {
-    kind: 'timeline',
-    title: 'Chronological timeline',
-    description: 'Order historical events, experimental milestones, and developments sequentially.',
-    icon: Timer,
-    theme: 'ruby',
-    badge: 'Sequence',
-  },
-  {
     kind: 'compare',
-    title: 'Compare sources',
-    description: 'Cross-analyze conflicting viewpoints, methodologies, and complementary evidence.',
+    title: 'Cross-Source Comparison',
+    description: 'Cross-analyze conflicting viewpoints, methodologies, and complementary findings.',
     icon: GitCompareArrows,
-    theme: 'slate',
-    badge: 'Synthesis',
+    theme: 'purple',
+    badge: 'Compare',
   },
 ];
 
@@ -105,10 +132,10 @@ export default function Studio() {
         body: JSON.stringify({ notebookId: id, kind }),
       });
       const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Failed to generate study artifact.');
+      if (!r.ok) throw new Error(data.error || 'Failed to generate synthesis artifact.');
       setResult(data.payload.content);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not generate study material.');
+      setError(e instanceof Error ? e.message : 'Could not generate synthesis artifact.');
     } finally {
       setBusy('');
     }
@@ -134,13 +161,13 @@ export default function Studio() {
 
         <div className="mb-10 pb-6 border-b border-dashed border-[#DCDAD4]">
           <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-2">
-            RESEARCH STUDIO
+            RESEARCH STUDIO · INTELLIGENCE ARTIFACTS
           </span>
           <h1 className="text-3xl sm:text-4xl font-serif font-normal text-[#1E201D] tracking-tight">
-            Make knowledge yours.
+            Make knowledge actionable.
           </h1>
-          <p className="text-sm text-[#737373] max-w-xl mt-1 leading-relaxed">
-            Generate synthesis artifacts grounded in your notebook’s indexed sources using Gemini.
+          <p className="text-sm text-[#737373] max-w-2xl mt-1 leading-relaxed">
+            Generate knowledge graphs, detect contradictions, engage multiple research perspectives, and transform sources into execution roadmaps using Gemini.
           </p>
         </div>
 
@@ -149,10 +176,10 @@ export default function Studio() {
           <div className="mb-8 p-6 rounded-2xl bg-white border border-[#DCDAD4] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 animate-scale-in">
             <div>
               <h4 className="text-sm font-semibold text-[#1E201D] mb-1">
-                Synthesizing {STUDIO_TOOLS.find((t) => t.kind === busy)?.title || 'study material'}
+                Synthesizing {STUDIO_TOOLS.find((t) => t.kind === busy)?.title || 'artifact'}
               </h4>
               <p className="text-xs text-[#7A7C75]">
-                Gemini is cross-referencing all source chunks in this notebook.
+                Gemini is cross-referencing all source chunks, graphs, and citations in this notebook.
               </p>
             </div>
             <ThinkingPill mode="studio" />
@@ -185,7 +212,7 @@ export default function Studio() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[#1E201D] transition-colors"
               >
                 {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                <span>{copied ? 'Copied' : 'Copy markdown'}</span>
               </button>
             </div>
 
@@ -209,8 +236,8 @@ export default function Studio() {
                 icon={<Icon size={20} />}
                 onClick={() => !busy && generate(tool.kind)}
                 meta={
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-1 font-medium">
                       <Sparkles size={11} /> Generate
                     </span>
                     <span>Gemini 2.5 ↗</span>
