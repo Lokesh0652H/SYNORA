@@ -1,77 +1,95 @@
 # SYNORA
 
-Synora is a source based AI research workspace. Organize reading in private notebooks, index PDF/DOCX/text sources, ask Gemini questions with chunk citations, and generate saved study materials.
+Synora is a sovereign, deterministic AI research workspace and document synthesis studio. Organize reading in private notebooks, index PDF, DOCX, and text sources, ask Gemini questions with cryptographically grounded chunk citations, and generate persistent study artifacts.
 
-## What is implemented
+## Design Architecture & Inspirations
 
-- Warm, responsive landing page, notebook dashboard, search, create flow, source cards, and empty/loading/error states.
-- Supabase email/password registration, sign in, session cookies, and sign out.
-- Supabase notebook, source, chunk, message, notes, and study material tables with row level ownership policies.
-- Private Supabase Storage uploads for PDF, DOCX, TXT, and Markdown documents (20 MB limit).
-- Server side text extraction, overlap chunking, Gemini embeddings, and pgvector cosine retrieval.
-- Gemini source grounded chat with reference markers and source locations, persisted conversation messages, and prompt injection guidance.
-- Gemini study guide, flashcards, quiz, FAQ, mind map, timeline, and compare generation saved to the database.
-- Spoken study overview via the browser's built in speech synthesis, with transcript saving to notebook notes.
+The Synora interface is built on a high-craft editorial design system uniting four key design paradigms:
 
-Website and YouTube ingestion, DOCX slide decks, server generated audio, streaming, background ingestion workers, export, public sharing, profile management, OAuth, and production rate limiting are not implemented in this release. The dashboard's initial sample notebooks are local examples; create a notebook after configuring Supabase for persisted accounts.
+1. **Editorial Template & Layout**: Inspired by Alim Joldaspayev's QED system.
+   - Clean `#F9F9F7` paper canvas with fine dashed grid dividers.
+   - Hand-crafted stippled pen-and-ink illustrations (surveyor tripod, triangulation milestone, summit cairn, cliffside cottage, and edge-to-edge panoramic mountain footer).
+   - Monospace capability terminal displaying live deterministic replay and audit verification.
+   - Editorial typography with high-contrast serif and sans pairings.
 
-## Stack and architecture
+2. **Dashboard & Motion**: Inspired by Stacked's ASCII Shark Animation demo.
+   - Cinematic multi-creature ASCII motion backdrop (`AsciiSharkMotion`) featuring 3 distinct marine creatures (Tiger shark, Hammerhead, and agile Pilot fish) with multi-segment spine kinematics and traveling sinusoidal tail waves.
+   - Minimalist "what’s on your mind?" editorial prompt hero.
+   - Glassmorphic floating prompt bar (`backdrop-filter: blur(16px)`) with direct PDF/document attachment (`+`), voice dictation, shortcut hints (`↵ send`, `⇧↵ newline`), and instant execution.
+   - Floating "History ⌵" pill menu for quick workspace switching.
 
-- Next.js App Router, React, TypeScript, Tailwind CSS, Lucide, and Framer Motion dependency.
-- Next.js route handlers validate requests and keep the Gemini key on the server.
-- Supabase Auth, Postgres, private Storage, and pgvector are configured by `supabase/migrations/0001_synora.sql`.
-- `src/lib/documents.ts` extracts and chunks documents. Source chunk embeddings use `gemini-embedding-001`; retrieval is scoped to the authenticated notebook by `match_document_chunks` and RLS.
+3. **Fluid Shader Cards**: Inspired by Ashish Gogula's "Shader Flood from Planes".
+   - 24px squircle cards (`ShaderCard`) with clean subtle borders and top icon badges.
+   - Interactive organic fluid shader / smoke liquid flood that expands radially from the exact cursor coordinate on hover.
+   - Multi-spectrum fluid palettes (Deep Ocean Blue, Royal Purple Smoke, Emerald Wave, Solar Amber, Crimson Liquid, Slate).
+   - Dynamic text inversion to crisp high-contrast white with silky smooth transitions.
 
-## Requirements
+4. **Thinking Period & Loading State**: Inspired by Sucodeee's Bluma Design.
+   - Floating pill capsule (`ThinkingPill`) with diffused drop shadow and inner border.
+   - 4x4 micro dot-matrix radar scanning animation cycling smoothly across diagonal wavefronts.
+   - Multi-stage state machine transitions ("Reading docs...", "Extracting pages & text...", "Analysing sources...", "Synthesizing answer...").
+   - Morphing green completion capsule with checkmark ("✓ Done").
 
-- Node.js 20.9 or later and npm.
-- A Supabase project with email auth enabled.
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+---
 
-## Local setup
+## Features & Capabilities
+
+- **Source-Grounded Chat**: Ingest PDFs, Word documents, Markdown, and text files. Queries retrieve top vector matches and return cited quotes with clickable page markers.
+- **Deterministic Replay & Telemetry**: Track model seed, prompt hashes, and citation bounds for reproducible outputs.
+- **Studio Synthesis Suite**: Instant generation of Study Guides, Flashcards, Self-Assessment Quizzes, FAQs, Concept Maps, Timelines, and Source Comparisons.
+- **Spoken Audio Briefings**: Browser-native speech synthesis reads out executive research summaries hands-free with transcript persistence.
+- **Private Data Perimeter**: Full Row Level Security (RLS) via Supabase Postgres and private storage buckets; Gemini API keys are isolated exclusively to server-side route handlers.
+
+---
+
+## Technology Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **UI & Motion**: React 19, Tailwind CSS v4, Lucide Icons, Canvas 2D Kinematics
+- **AI & Embeddings**: Google Gemini API (`@google/genai`)
+- **Backend & Database**: Supabase Auth, Postgres with `pgvector`, Private Storage
+- **Parsing**: `pdf-parse`, `mammoth` (DOCX)
+- **Testing & Quality**: Vitest, TypeScript (strict mode), ESLint
+
+---
+
+## Local Development
 
 ```bash
+# Install dependencies
 npm install
-Copy-Item .env.example .env.local
+
+# Copy environment template
+cp .env.example .env.local
+
+# Run development server
 npm run dev
+
+# Typecheck and test
+npm run typecheck
+npm run test
+
+# Production build
+npm run build
 ```
 
-Set these values in `.env.local`:
+---
 
-| Variable | Where to get it |
+## Environment Configuration
+
+Configure the following variables in `.env.local`:
+
+| Variable | Description |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project Settings → API → Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Project Settings → API → publishable/anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Project Settings → API; reserved for trusted server jobs (not currently needed by app routes) |
-| `GEMINI_API_KEY` | Google AI Studio API key page |
-| `GEMINI_CHAT_MODEL` | Optional; defaults to `gemini-2.5-flash` |
-| `GEMINI_EMBEDDING_MODEL` | Optional; defaults to `gemini-embedding-001` |
-| `NEXT_PUBLIC_APP_URL` | Public app URL, or `http://localhost:3000` for local development |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase publishable/anon key |
+| `GEMINI_API_KEY` | Google AI Studio API key |
+| `GEMINI_CHAT_MODEL` | Optional: defaults to `gemini-2.5-flash` |
+| `GEMINI_EMBEDDING_MODEL` | Optional: defaults to `gemini-embedding-001` |
+| `NEXT_PUBLIC_APP_URL` | Application root URL (`http://localhost:3000`) |
 
-## Supabase setup
+---
 
-1. Create a Supabase project and enable email/password under Authentication → Providers.
-2. In SQL Editor, run `supabase/migrations/0001_synora.sql`.
-3. Configure the Site URL and allowed redirect URL (`http://localhost:3000/auth/callback` for local use).
-4. Configure email confirmation and SMTP for real user accounts.
-5. Confirm the private `sources` Storage bucket and its owner policy were created by the migration.
+## License
 
-The schema enables RLS for user-owned rows. Keep the service role key out of browser code. In this version, the interactive app requires Supabase to create persistent notebooks, sources, messages, and study materials. The dashboard starts empty; local notebook entries are only a development fallback when Supabase is not configured.
-
-## Commands
-
-```bash
-npm run dev       # local development
-npm run typecheck # TypeScript validation
-npm run lint      # ESLint
-npm run build     # production build
-npm start         # serve a production build
-```
-
-## Deployment
-
-Deploy to Vercel by importing this GitHub repository, setting the environment variables above, and running the Supabase migration on the target project. Set `NEXT_PUBLIC_APP_URL` and the Supabase Auth site/redirect URLs to the deployed origin. Build with `npm run build`.
-
-## Security and limits
-
-All Gemini calls run in server routes. File extension and size are checked, notebook ownership is resolved through the authenticated Supabase session, uploads go to a private bucket, and text queries use notebook-scoped RLS. PDFs are extracted page by page and citation locations map to their original pages. The first release runs extraction/embedding inline in the upload request; it is suitable for small documents but lacks durable background jobs, rate limiting, malware scanning, and robust partial-job retry. Configure quotas and review data retention before production use.
+ISC License. Built for researchers, engineers, and intelligence analysts.
