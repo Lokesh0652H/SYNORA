@@ -56,7 +56,7 @@ Set these values in `.env.local`:
 4. Configure email confirmation and SMTP for real user accounts.
 5. Confirm the private `sources` Storage bucket and its owner policy were created by the migration.
 
-The schema enables RLS for user-owned rows. Keep the service role key out of browser code. In this version, the interactive app requires Supabase to create persistent notebooks, sources, messages, and study materials; sample dashboard cards are illustrative local state.
+The schema enables RLS for user-owned rows. Keep the service role key out of browser code. In this version, the interactive app requires Supabase to create persistent notebooks, sources, messages, and study materials. The dashboard starts empty; local notebook entries are only a development fallback when Supabase is not configured.
 
 ## Commands
 
@@ -74,4 +74,4 @@ Deploy to Vercel by importing this GitHub repository, setting the environment va
 
 ## Security and limits
 
-All Gemini calls run in server routes. File extension and size are checked, notebook ownership is resolved through the authenticated Supabase session, uploads go to a private bucket, and text queries use notebook-scoped RLS. The first release runs extraction/embedding inline in the upload request; it is suitable for small documents but lacks durable background jobs, rate limiting, malware scanning, and robust partial-job retry. The current PDF location labels are approximate excerpt-to-page mapping and should not be treated as exact PDF page citations. Configure quotas and review data retention before production use.
+All Gemini calls run in server routes. File extension and size are checked, notebook ownership is resolved through the authenticated Supabase session, uploads go to a private bucket, and text queries use notebook-scoped RLS. PDFs are extracted page by page and citation locations map to their original pages. The first release runs extraction/embedding inline in the upload request; it is suitable for small documents but lacks durable background jobs, rate limiting, malware scanning, and robust partial-job retry. Configure quotas and review data retention before production use.
