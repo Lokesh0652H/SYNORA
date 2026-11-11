@@ -26,10 +26,12 @@ import {
   Layers,
   Pencil,
   MoreVertical,
+  Eye,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AsciiSharkMotion from '@/components/AsciiSharkMotion';
 import ThinkingPill from '@/components/ThinkingPill';
+import SourceInspector from '@/components/SourceInspector';
 import { readNotebooks, renameNotebook, deleteNotebook } from '@/lib/data';
 import { exportNotebookToPdf, exportNotebookToDocx, exportNotebookToMarkdown } from '@/lib/export';
 
@@ -38,12 +40,18 @@ type Source = {
   title: string;
   kind: string;
   status: string;
+  content?: string;
+  chunks?: { content: string; location?: string }[];
+  pageCount?: number;
+  wordCount?: number;
+  createdAt?: string;
 };
 
 type Citation = {
   marker: string;
   title: string;
   location: string;
+  sourceId?: string;
   quote?: string;
 };
 
@@ -154,6 +162,9 @@ export default function NotebookWorkspace() {
   const [renameInput, setRenameInput] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // Source Inspection state
+  const [inspectingSource, setInspectingSource] = useState<Source | null>(null);
+
   async function handleRenameNotebook(e: React.FormEvent) {
     e.preventDefault();
     if (!renameInput.trim()) return;
@@ -231,6 +242,11 @@ export default function NotebookWorkspace() {
       title: noteTitle.trim() || 'Untitled Note',
       kind: 'note',
       status: 'ready',
+      content: noteContent.trim(),
+      wordCount: noteContent.trim().split(/\s+/).filter(Boolean).length,
+      pageCount: 1,
+      chunks: [{ content: noteContent.trim(), location: 'Note content' }],
+      createdAt: new Date().toISOString(),
     };
     setSources((prev) => {
       const next = [noteSource, ...prev];
@@ -266,6 +282,11 @@ export default function NotebookWorkspace() {
         title: data.title || urlInput.trim(),
         kind: data.type === 'youtube' ? 'youtube' : 'web',
         status: 'ready',
+        content: data.text || (data.chunks?.map((c: any) => c.content || c.text).join('\n\n')) || '',
+        chunks: data.chunks || [],
+        pageCount: data.pageCount || data.page_count || 1,
+        wordCount: data.word_count || 0,
+        createdAt: data.created_at || new Date().toISOString(),
       };
 
       setNotice(`${newSource.title} successfully indexed.`);
@@ -373,11 +394,25 @@ export default function NotebookWorkspace() {
       setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
       setLoading(true);
 
+      const selectedSourcesList = sources.filter(
+        (s) => selectedSourceIds.size === 0 || selectedSourceIds.has(s.id)
+      );
+
       try {
         const r = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notebookId: id, message: prompt }),
+          body: JSON.stringify({
+            notebookId: id,
+            message: prompt,
+            sources: selectedSourcesList.map((s) => ({
+              id: s.id,
+              title: s.title,
+              kind: s.kind,
+              content: s.content || '',
+              chunks: s.chunks || [],
+            })),
+          }),
         });
         const data = await r.json();
         if (!r.ok) throw new Error(data.error || 'Could not answer your question.');
@@ -391,7 +426,7 @@ export default function NotebookWorkspace() {
         setLoading(false);
       }
     },
-    [id, input, loading]
+    [id, input, loading, sources, selectedSourceIds]
   );
 
   // If page was loaded with ?q= from dashboard prompt bar, trigger ask automatically
@@ -434,6 +469,11 @@ export default function NotebookWorkspace() {
             title: file.name,
             kind: data.kind || file.name.split('.').pop()?.toLowerCase() || 'file',
             status: 'ready',
+            content: data.text || '',
+            chunks: data.chunks || [],
+            pageCount: data.page_count,
+            wordCount: data.word_count,
+            createdAt: data.created_at || new Date().toISOString(),
           };
           setNotice(`${file.name} indexed and ready.`);
         } else {
@@ -998,11 +1038,11 @@ export default function NotebookWorkspace() {
                 return (
                   <div
                     key={s.id}
-                    onClick={() => toggleSource(s.id)}
+                    onClick={() => setInspectingSource(s)}
                     className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2.5 group cursor-pointer ${
                       isChecked
                         ? 'bg-white border-[#DCDAD4] shadow-2xs hover:border-[#1E201D]'
-                        : 'bg-white/50 border-transparent opacity-60 hover:opacity-100 hover:bg-white hover:border-[#DCDAD4]'
+                        : 'bg-white/50 border-transparent opacity-70 hover:opacity-100 hover:bg-white hover:border-[#DCDAD4]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -1016,7 +1056,7 @@ export default function NotebookWorkspace() {
                       {/* Filename & Type */}
                       <div className="min-w-0 flex-1">
                         <div
-                          className="text-xs font-medium text-[#1E201D] truncate leading-tight"
+                          className="text-xs font-medium text-[#1E201D] truncate leading-tight group-hover:text-black"
                           title={s.title}
                         >
                           {s.title}
@@ -1025,6 +1065,7 @@ export default function NotebookWorkspace() {
                           <span>{badge.label}</span>
                           <span>·</span>
                           <span className="text-emerald-700">Ready</span>
+                          <span className="hidden group-hover:inline text-amber-700/80 font-sans font-medium">· Inspect</span>
                         </div>
                       </div>
                     </div>
@@ -1033,6 +1074,19 @@ export default function NotebookWorkspace() {
                       className="flex items-center gap-1.5 shrink-0"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      {/* Inspect Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInspectingSource(s);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-black/5 text-[#8C8E85] hover:text-[#1E201D] transition-all cursor-pointer"
+                        title="Inspect source document"
+                      >
+                        <Eye size={13} />
+                      </button>
+
                       {/* Delete Button (visible on hover) */}
                       <button
                         type="button"
@@ -1434,16 +1488,63 @@ export default function NotebookWorkspace() {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#F0EFEB] flex justify-end">
+              <div className="pt-3 border-t border-[#F0EFEB] flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const matched = sources.find(
+                      (s) =>
+                        s.id === activeCitation.sourceId ||
+                        s.title.toLowerCase() === activeCitation.title.toLowerCase()
+                    );
+                    if (matched) {
+                      setActiveCitation(null);
+                      setInspectingSource(matched);
+                    }
+                  }}
+                  className="text-xs text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1 cursor-pointer"
+                >
+                  <Eye size={12} />
+                  <span>Inspect full source →</span>
+                </button>
+
                 <button
                   onClick={() => setActiveCitation(null)}
-                  className="px-4 py-1.5 rounded-md bg-[#1A1A1A] text-white text-xs font-medium"
+                  className="px-4 py-1.5 rounded-md bg-[#1A1A1A] text-white text-xs font-medium cursor-pointer"
                 >
                   Close
                 </button>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Source Inspector Modal */}
+        {inspectingSource && (
+          <SourceInspector
+            source={inspectingSource}
+            onClose={() => setInspectingSource(null)}
+            onAskAboutSource={(prompt) => {
+              setInput(prompt);
+              void ask(prompt);
+            }}
+            onDeleteSource={(sourceId) => {
+              removeSource(sourceId);
+              setInspectingSource(null);
+            }}
+            onUpdateSource={(updated) => {
+              setSources((prev) => {
+                const next = prev.map((item) =>
+                  item.id === updated.id ? { ...item, ...updated } : item
+                );
+                try {
+                  localStorage.setItem(`synora_sources_${id}`, JSON.stringify(next));
+                } catch {}
+                return next;
+              });
+              setInspectingSource(updated);
+            }}
+          />
         )}
       </div>
     </AppShell>

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { z } from 'zod';
 import { supabaseServer } from '@/lib/supabase/server';
 import { splitIntoChunks } from '@/lib/documents';
@@ -132,15 +134,38 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({
+    const sourceRecord = {
       id: sourceId,
+      notebook_id: notebookId,
+      notebookId: notebookId,
       title,
       type: sourceType,
+      kind: sourceType,
       author,
       pageCount: estimatedPages,
+      page_count: estimatedPages,
       chunkCount: chunks.length,
-      chunks: chunks.map((c) => ({ text: c.content, location: c.location })),
-    });
+      chunks_count: chunks.length,
+      text: extractedText,
+      chunks: chunks.map((c) => ({ content: c.content, location: c.location })),
+      word_count: extractedText.split(/\s+/).filter(Boolean).length,
+      created_at: new Date().toISOString(),
+    };
+
+    // Save to disk cache
+    try {
+      const cacheDir = path.join(process.cwd(), '.synora_cache', 'sources');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      fs.writeFileSync(
+        path.join(cacheDir, `${sourceId}.json`),
+        JSON.stringify(sourceRecord, null, 2),
+        'utf8'
+      );
+    } catch {}
+
+    return NextResponse.json(sourceRecord);
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error during URL ingestion' },

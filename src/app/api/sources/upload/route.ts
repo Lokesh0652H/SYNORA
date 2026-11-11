@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { supabaseServer } from '@/lib/supabase/server';
 import { splitIntoChunks, extractText } from '@/lib/documents';
 import { genAI } from '@/lib/ai';
@@ -74,14 +76,34 @@ export async function POST(req: Request) {
     const sourceRecord = {
       id: sourceId,
       notebook_id: notebookId,
+      notebookId: notebookId,
       title: file.name,
       kind: ext,
       status: 'ready',
       page_count: pages || Math.max(1, Math.ceil(pieces.length / 3)),
-      chunks: pieces.length,
+      chunks_count: pieces.length,
+      chunks: pieces,
+      text: text,
+      word_count: text.split(/\s+/).filter(Boolean).length,
+      created_at: new Date().toISOString(),
     };
 
-    // 4. Attempt Supabase persistence (best-effort resilience)
+    // 4. Save to disk cache for fast offline / unmigrated inspection & chat retrieval
+    try {
+      const cacheDir = path.join(process.cwd(), '.synora_cache', 'sources');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      fs.writeFileSync(
+        path.join(cacheDir, `${sourceId}.json`),
+        JSON.stringify(sourceRecord, null, 2),
+        'utf8'
+      );
+    } catch (cacheErr) {
+      console.warn('Local cache write failed:', cacheErr);
+    }
+
+    // 5. Attempt Supabase persistence (best-effort resilience)
     try {
       const db = await supabaseServer();
       if (db) {
@@ -89,8 +111,8 @@ export async function POST(req: Request) {
         const userId = userRes?.user?.id;
         if (userId) {
           // Attempt Storage upload
-          const path = `${userId}/${notebookId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-          await db.storage.from('sources').upload(path, file, {
+          const storagePath = `${userId}/${notebookId}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+          await db.storage.from('sources').upload(storagePath, file, {
             contentType: file.type || 'application/octet-stream',
             upsert: false,
           });
@@ -105,7 +127,7 @@ export async function POST(req: Request) {
               title: file.name,
               kind: ext,
               status: 'ready',
-              storage_path: path,
+              storage_path: storagePath,
               page_count: sourceRecord.page_count,
             })
             .select('id')
@@ -129,7 +151,7 @@ export async function POST(req: Request) {
       console.warn('Supabase persistence bypassed (local fallback mode active):', dbErr);
     }
 
-    // Always return successful source record with chunks
+    // Return rich source record
     return NextResponse.json(sourceRecord);
   } catch (e: any) {
     console.error('Source upload failed:', e);
