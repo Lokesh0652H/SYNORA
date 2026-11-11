@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import {
   ArrowUpRight,
   Check,
@@ -24,11 +24,13 @@ import {
   Trash2,
   FilePlus2,
   Layers,
+  Pencil,
+  MoreVertical,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AsciiSharkMotion from '@/components/AsciiSharkMotion';
 import ThinkingPill from '@/components/ThinkingPill';
-import { readNotebooks } from '@/lib/data';
+import { readNotebooks, renameNotebook, deleteNotebook } from '@/lib/data';
 import { exportNotebookToPdf, exportNotebookToDocx, exportNotebookToMarkdown } from '@/lib/export';
 
 type Source = {
@@ -143,6 +145,45 @@ export default function NotebookWorkspace() {
   const fileRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const initialQueryProcessed = useRef(false);
+
+  const router = useRouter();
+
+  // Rename & Delete notebook state
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameInput, setRenameInput] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  async function handleRenameNotebook(e: React.FormEvent) {
+    e.preventDefault();
+    if (!renameInput.trim()) return;
+    const newName = renameInput.trim();
+    setTitle(newName);
+    renameNotebook(id, newName);
+    setShowRenameModal(false);
+    setNotice('Notebook renamed.');
+
+    try {
+      await fetch(`/api/notebooks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newName }),
+      });
+    } catch {}
+  }
+
+  async function handleDeleteNotebook() {
+    deleteNotebook(id);
+    setShowDeleteModal(false);
+
+    try {
+      await fetch(`/api/notebooks/${id}`, {
+        method: 'DELETE',
+      });
+    } catch {}
+
+    router.push('/dashboard');
+  }
 
   // Selection toggles
   const allSelected = sources.length > 0 && selectedSourceIds.size === sources.length;
@@ -449,15 +490,69 @@ export default function NotebookWorkspace() {
               <div className="text-[10px] font-mono text-[#8C8E85] tracking-widest uppercase">
                 RESEARCH NOTEBOOK
               </div>
-              <h1 className="text-xl sm:text-2xl font-serif font-normal text-[#1E201D] tracking-tight truncate max-w-md">
-                {title}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-serif font-normal text-[#1E201D] tracking-tight truncate max-w-md">
+                  {title}
+                </h1>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRenameInput(title);
+                    setShowRenameModal(true);
+                  }}
+                  className="p-1 rounded-md hover:bg-black/5 text-[#8C8E85] hover:text-[#1E201D] transition-colors cursor-pointer"
+                  title="Rename notebook"
+                >
+                  <Pencil size={13} />
+                </button>
+              </div>
               <div className="text-xs text-[#8C8E85]">
                 {sources.length} {sources.length === 1 ? 'source' : 'sources'} · Private grounded space
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Workspace Options Menu */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
+                  className="w-8 h-8 rounded-md bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[#555] hover:text-[#1E201D] flex items-center justify-center transition-colors cursor-pointer"
+                  title="Notebook options"
+                >
+                  <MoreVertical size={14} />
+                </button>
+
+                {showWorkspaceMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-[#EAE8E2] py-1.5 z-50 text-xs animate-scale-in">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowWorkspaceMenu(false);
+                        setRenameInput(title);
+                        setShowRenameModal(true);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-[#F7F7F4] flex items-center gap-2.5 text-[#1E201D] transition-colors cursor-pointer"
+                    >
+                      <Pencil size={13} className="text-[#8C8E85]" />
+                      <span>Rename notebook</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowWorkspaceMenu(false);
+                        setShowDeleteModal(true);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-rose-50 flex items-center gap-2.5 text-rose-600 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={13} className="text-rose-500" />
+                      <span>Delete notebook</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Export Dropdown Menu */}
               <div className="relative">
                 <button
@@ -1192,6 +1287,113 @@ export default function NotebookWorkspace() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Rename Notebook Modal */}
+        {showRenameModal && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+            onClick={() => setShowRenameModal(false)}
+          >
+            <div
+              className="bg-[#FBFAF6] rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#DEDAD0] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DC]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#EFEBE2] border border-[#DEDAD0] flex items-center justify-center text-[#20201D]">
+                    <Pencil size={15} />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-base text-[#1E201D] font-medium">Rename Notebook</h4>
+                    <p className="text-[11px] text-[#7A7C75]">Update the title of your research space</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowRenameModal(false)}
+                  className="w-7 h-7 rounded-full hover:bg-[#EFEBE2] flex items-center justify-center text-[#777] cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <form onSubmit={handleRenameNotebook} className="mt-4 space-y-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A877D] block mb-1.5">
+                    Notebook Title
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={renameInput}
+                    onChange={(e) => setRenameInput(e.target.value)}
+                    maxLength={100}
+                    className="w-full px-3 py-2 bg-white border border-[#DEDAD0] rounded-xl text-xs text-[#1E201D] outline-none focus:border-[#20201D] transition-colors"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE6DC]">
+                  <button
+                    type="button"
+                    onClick={() => setShowRenameModal(false)}
+                    className="px-3.5 py-1.5 rounded-lg text-xs text-[#60635C] hover:bg-[#EFEBE2] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!renameInput.trim()}
+                    className="px-4 py-1.5 rounded-lg text-xs font-medium bg-[#20201D] text-white hover:bg-black disabled:opacity-40 transition-all cursor-pointer shadow-xs"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Notebook Modal */}
+        {showDeleteModal && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <div
+              className="bg-[#FBFAF6] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-[#DEDAD0] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mb-4">
+                <Trash2 size={20} />
+              </div>
+
+              <h3 className="font-serif text-lg font-medium text-[#1E201D] mb-1.5">
+                Delete &ldquo;{title}&rdquo;?
+              </h3>
+
+              <p className="text-xs text-[#66635B] leading-relaxed mb-6">
+                Are you sure you want to delete this notebook? All uploaded sources, indexed documents, and conversations will be removed.
+              </p>
+
+              <div className="flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-3.5 py-1.5 rounded-lg text-xs text-[#60635C] hover:bg-[#EFEBE2] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteNotebook}
+                  className="px-4 py-1.5 rounded-lg text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-xs cursor-pointer"
+                >
+                  Delete Notebook
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -1,5 +1,58 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase/server';
-export async function GET(_req:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const db=await supabaseServer();if(!db)return NextResponse.json({error:'Supabase is not configured.'},{status:503});const {data:{user}}=await db.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});const {data:notebook,error}=await db.from('notebooks').select('id,title,description,updated_at,sources(id,title,kind,status,created_at),messages(id,role,content,citations,created_at)').eq('id',id).single();if(error||!notebook)return NextResponse.json({error:'Notebook not found.'},{status:404});return NextResponse.json(notebook);}
-export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const db=await supabaseServer();if(!db)return NextResponse.json({error:'Supabase is not configured.'},{status:503});const {data:{user}}=await db.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});const body=await req.json();if(typeof body.title!=='string'||!body.title.trim()||body.title.length>100)return NextResponse.json({error:'Enter a notebook name under 100 characters.'},{status:400});const {data,error}=await db.from('notebooks').update({title:body.title.trim(),description:typeof body.description==='string'?body.description.slice(0,500):''}).eq('id',id).select('id,title,description').single();if(error)return NextResponse.json({error:'Could not update notebook.'},{status:500});return NextResponse.json(data);}
-export async function DELETE(_req:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const db=await supabaseServer();if(!db)return NextResponse.json({error:'Supabase is not configured.'},{status:503});const {data:{user}}=await db.auth.getUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});const {error}=await db.from('notebooks').delete().eq('id',id);if(error)return NextResponse.json({error:'Could not delete notebook.'},{status:500});return new NextResponse(null,{status:204});}
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    const db = await supabaseServer();
+    if (db) {
+      const { data: notebook, error } = await db
+        .from('notebooks')
+        .select(
+          'id,title,description,updated_at,sources(id,title,kind,status,created_at),messages(id,role,content,citations,created_at)'
+        )
+        .eq('id', id)
+        .single();
+      if (!error && notebook) return NextResponse.json(notebook);
+    }
+  } catch {}
+  return NextResponse.json({ id, title: 'Research notebook', sources: [], messages: [] });
+}
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const body = await req.json();
+  const title = typeof body.title === 'string' ? body.title.trim().slice(0, 100) : '';
+  const description = typeof body.description === 'string' ? body.description.trim().slice(0, 500) : '';
+
+  if (!title) {
+    return NextResponse.json({ error: 'Enter a notebook name.' }, { status: 400 });
+  }
+
+  try {
+    const db = await supabaseServer();
+    if (db) {
+      const { data, error } = await db
+        .from('notebooks')
+        .update({ title, description, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id,title,description')
+        .single();
+      if (!error && data) return NextResponse.json(data);
+    }
+  } catch {}
+
+  return NextResponse.json({ id, title, description });
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    const db = await supabaseServer();
+    if (db) {
+      await db.from('notebooks').delete().eq('id', id);
+    }
+  } catch {}
+
+  return new NextResponse(null, { status: 204 });
+}

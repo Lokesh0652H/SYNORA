@@ -16,12 +16,15 @@ import {
   Paperclip,
   Sparkles,
   FileUp,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AsciiSharkMotion from '@/components/AsciiSharkMotion';
 import ShaderCard, { type ShaderTheme } from '@/components/ShaderCard';
 import ThinkingPill from '@/components/ThinkingPill';
-import { readNotebooks, writeNotebooks, type Notebook } from '@/lib/data';
+import { readNotebooks, writeNotebooks, renameNotebook, deleteNotebook, type Notebook } from '@/lib/data';
 
 const CARD_THEMES: ShaderTheme[] = ['blue', 'purple', 'emerald', 'amber', 'magenta', 'ruby', 'slate'];
 
@@ -34,6 +37,13 @@ export default function Dashboard() {
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
+  // Notebook Rename & Delete state
+  const [activeMenuBookId, setActiveMenuBookId] = useState<string | null>(null);
+  const [renameModalBook, setRenameModalBook] = useState<Notebook | null>(null);
+  const [renameTitle, setRenameTitle] = useState('');
+  const [renameDescription, setRenameDescription] = useState('');
+  const [deleteModalBook, setDeleteModalBook] = useState<Notebook | null>(null);
+
   // Stacked Prompt Bar State
   const [promptInput, setPromptInput] = useState('');
   const [isProcessingPrompt, setIsProcessingPrompt] = useState(false);
@@ -45,12 +55,13 @@ export default function Dashboard() {
     setBooks(readNotebooks());
   }, []);
 
-  // Close history menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (historyRef.current && !historyRef.current.contains(e.target as Node)) {
         setHistoryOpen(false);
       }
+      setActiveMenuBookId(null);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -63,6 +74,49 @@ export default function Dashboard() {
       ),
     [books, query]
   );
+
+  async function handleRenameSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!renameModalBook || !renameTitle.trim()) return;
+    const targetId = renameModalBook.id;
+    const nextTitle = renameTitle.trim();
+    const nextDesc = renameDescription.trim();
+
+    renameNotebook(targetId, nextTitle);
+    setBooks((prev) =>
+      prev.map((b) =>
+        b.id === targetId
+          ? { ...b, title: nextTitle, description: nextDesc || b.description, updatedAt: 'Just now' }
+          : b
+      )
+    );
+
+    try {
+      await fetch(`/api/notebooks/${targetId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: nextTitle, description: nextDesc }),
+      });
+    } catch {}
+
+    setRenameModalBook(null);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteModalBook) return;
+    const targetId = deleteModalBook.id;
+
+    deleteNotebook(targetId);
+    setBooks((prev) => prev.filter((b) => b.id !== targetId));
+
+    try {
+      await fetch(`/api/notebooks/${targetId}`, {
+        method: 'DELETE',
+      });
+    } catch {}
+
+    setDeleteModalBook(null);
+  }
 
   // Create Notebook
   async function create(initialTitle?: string, initialPrompt?: string) {
@@ -324,6 +378,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
               {filtered.map((b, idx) => {
                 const theme = CARD_THEMES[idx % CARD_THEMES.length];
+                const isMenuOpen = activeMenuBookId === b.id;
                 return (
                   <ShaderCard
                     key={b.id}
@@ -332,6 +387,56 @@ export default function Dashboard() {
                     theme={theme}
                     href={`/notebook/${b.id}`}
                     badge={`${b.sources} ${b.sources === 1 ? 'source' : 'sources'}`}
+                    actions={
+                      <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveMenuBookId(isMenuOpen ? null : b.id);
+                          }}
+                          className="w-7 h-7 rounded-full hover:bg-black/10 flex items-center justify-center text-[#6E7067] hover:text-[#1E201D] transition-colors cursor-pointer"
+                          title="Notebook options"
+                        >
+                          <MoreVertical size={14} />
+                        </button>
+
+                        {isMenuOpen && (
+                          <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-[#EAE8E2] py-1 z-30 text-xs animate-scale-in">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveMenuBookId(null);
+                                setRenameModalBook(b);
+                                setRenameTitle(b.title);
+                                setRenameDescription(b.description || '');
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-[#F7F7F4] flex items-center gap-2 text-[#1E201D] transition-colors cursor-pointer"
+                            >
+                              <Pencil size={13} className="text-[#8C8E85]" />
+                              <span>Rename notebook</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActiveMenuBookId(null);
+                                setDeleteModalBook(b);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600 transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={13} className="text-red-500" />
+                              <span>Delete notebook</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    }
                     icon={<BookOpen size={20} />}
                     meta={
                       <div className="flex items-center justify-between text-[11px]">
@@ -455,6 +560,123 @@ export default function Dashboard() {
                 >
                   <Plus size={14} />
                   Create workspace
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Rename Notebook */}
+        {renameModalBook && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setRenameModalBook(null)}
+          >
+            <div
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-black/[0.08] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#F0EFEB]">
+                <div className="flex items-center gap-2">
+                  <Pencil size={18} className="text-[#1E201D]" />
+                  <h3 className="text-xl font-serif font-normal text-[#1E201D]">
+                    Rename notebook
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRenameModalBook(null)}
+                  className="w-8 h-8 rounded-full hover:bg-[#F4F4F0] flex items-center justify-center text-[#777] hover:text-[#111] cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleRenameSubmit} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider mb-1.5">
+                    Notebook name
+                  </label>
+                  <input
+                    autoFocus
+                    required
+                    value={renameTitle}
+                    onChange={(e) => setRenameTitle(e.target.value)}
+                    maxLength={100}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCDAD4] focus:border-black/50 text-sm outline-none text-[#1E201D]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider mb-1.5">
+                    Description <span className="normal-case text-[#AAA]">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={renameDescription}
+                    onChange={(e) => setRenameDescription(e.target.value)}
+                    maxLength={500}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#DCDAD4] focus:border-black/50 text-sm outline-none text-[#1E201D] resize-none"
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-[#F0EFEB] flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRenameModalBook(null)}
+                    className="px-4 py-2 rounded-md text-xs font-medium text-[#666] hover:text-black hover:bg-[#F4F4F0] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!renameTitle.trim()}
+                    className="px-5 py-2 rounded-md bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium transition-all shadow-sm cursor-pointer disabled:opacity-40"
+                  >
+                    Save changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Delete Confirmation */}
+        {deleteModalBook && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setDeleteModalBook(null)}
+          >
+            <div
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-black/[0.08] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+                <Trash2 size={22} />
+              </div>
+
+              <h3 className="text-lg font-serif font-medium text-[#1E201D] mb-2">
+                Delete &ldquo;{deleteModalBook.title}&rdquo;?
+              </h3>
+
+              <p className="text-xs text-[#7A7C75] leading-relaxed mb-6">
+                Are you sure you want to delete this notebook? All uploaded sources, indexed chunks, and research dialogues will be permanently removed.
+              </p>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModalBook(null)}
+                  className="px-4 py-2 rounded-md text-xs font-medium text-[#666] hover:text-black hover:bg-[#F4F4F0] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  className="px-4 py-2 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium transition-all shadow-sm cursor-pointer"
+                >
+                  Delete notebook
                 </button>
               </div>
             </div>

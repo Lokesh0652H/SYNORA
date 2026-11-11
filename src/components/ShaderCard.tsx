@@ -13,6 +13,7 @@ export interface ShaderCardProps {
   href?: string;
   onClick?: () => void;
   badge?: string;
+  actions?: React.ReactNode;
   meta?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
@@ -71,6 +72,7 @@ export default function ShaderCard({
   href,
   onClick,
   badge,
+  actions,
   meta,
   children,
   className = '',
@@ -223,17 +225,20 @@ export default function ShaderCard({
             </div>
           )}
 
-          {badge && (
-            <span
-              className={`text-[11px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full border transition-colors duration-300 ${
-                hovered
-                  ? 'bg-white/20 text-white border-white/30'
-                  : 'bg-[#F4F3EE] text-[#6E7067] border-black/[0.06]'
-              }`}
-            >
-              {badge}
-            </span>
-          )}
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {badge && (
+              <span
+                className={`text-[11px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full border transition-colors duration-300 ${
+                  hovered
+                    ? 'bg-white/20 text-white border-white/30'
+                    : 'bg-[#F4F3EE] text-[#6E7067] border-black/[0.06]'
+                }`}
+              >
+                {badge}
+              </span>
+            )}
+            {actions}
+          </div>
         </div>
 
         {/* Title */}
