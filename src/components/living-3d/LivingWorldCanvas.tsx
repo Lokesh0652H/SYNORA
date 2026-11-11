@@ -16,14 +16,15 @@ import {
 } from './builder';
 import { LivingObjectId } from './types';
 
-// Base spatial anchors corresponding to the landing page sections
+// Spatial anchors placed in the open margins and deep in Z (-2.0)
+// so they stay behind cards, text, and interactive elements
 const OBJECT_BASE_POSITIONS: Record<LivingObjectId, THREE.Vector3> = {
-  'knowledge-orb': new THREE.Vector3(3.6, 2.0, 0.5),      // Hero section right
-  'research-compass': new THREE.Vector3(-3.8, -1.8, 0.3),  // Research Journey left
-  'knowledge-fragment': new THREE.Vector3(4.0, -5.2, 0.4), // Product Demo right
-  'evidence-prism': new THREE.Vector3(-4.0, -8.6, 0.3),    // Intelligence Core left
-  'time-capsule': new THREE.Vector3(3.8, -12.2, 0.4),      // Learning Ecosystem right
-  'explorer': new THREE.Vector3(-3.6, -15.4, 0.2),         // Security & Solutions left
+  'knowledge-orb': new THREE.Vector3(4.5, 2.2, -2.0),      // Hero right margin
+  'research-compass': new THREE.Vector3(-4.8, -1.8, -2.2),  // Research Journey left margin
+  'knowledge-fragment': new THREE.Vector3(5.0, -5.2, -2.0), // Product Demo right margin
+  'evidence-prism': new THREE.Vector3(-5.0, -8.6, -2.2),    // Intelligence Core left margin
+  'time-capsule': new THREE.Vector3(4.8, -12.2, -2.0),      // Learning Ecosystem right margin
+  'explorer': new THREE.Vector3(-4.6, -15.4, -2.2),         // Security & Solutions left margin
 };
 
 export default function LivingWorldCanvas() {
@@ -45,7 +46,6 @@ export default function LivingWorldCanvas() {
     const container = containerRef.current;
     if (!container) return;
 
-    // Detect reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // 1. Scene, Camera, Renderer
@@ -66,14 +66,14 @@ export default function LivingWorldCanvas() {
     container.appendChild(renderer.domElement);
 
     // 2. Studio Lighting
-    const ambientLight = new THREE.AmbientLight(0xfff8ee, 1.3);
+    const ambientLight = new THREE.AmbientLight(0xfff8ee, 1.4);
     scene.add(ambientLight);
 
-    const mainSun = new THREE.DirectionalLight(0xffedd0, 2.0);
+    const mainSun = new THREE.DirectionalLight(0xffedd0, 2.2);
     mainSun.position.set(6, 12, 8);
     scene.add(mainSun);
 
-    const fillLight = new THREE.DirectionalLight(0xdceae3, 0.8);
+    const fillLight = new THREE.DirectionalLight(0xdceae3, 0.9);
     fillLight.position.set(-6, -4, -4);
     scene.add(fillLight);
 
@@ -89,7 +89,6 @@ export default function LivingWorldCanvas() {
       buildExplorerMountain(mats),
     ];
 
-    // Set initial positions and add to scene
     const hitBoxes: THREE.Mesh[] = [];
     objects.forEach((obj) => {
       const base = OBJECT_BASE_POSITIONS[obj.id];
@@ -98,7 +97,7 @@ export default function LivingWorldCanvas() {
       hitBoxes.push(obj.hitBox);
     });
 
-    // 4. Continuous Golden Ribbon & Floating Beads
+    // 4. Continuous Golden Ribbon & Floating Beads (in background behind content)
     const ribbon = buildContinuousGoldenRibbon(scene, mats);
 
     // 5. Scroll and Mouse Tracking
@@ -126,14 +125,12 @@ export default function LivingWorldCanvas() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      // Normalize mouse coordinates (-1 to +1)
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
       pointer.x = mouse.x;
       pointer.y = mouse.y;
 
-      // Raycast to change cursor style when hovering interactive objects
       raycaster.setFromCamera(pointer, camera);
       const intersects = raycaster.intersectObjects(hitBoxes);
 
@@ -145,7 +142,6 @@ export default function LivingWorldCanvas() {
     };
 
     const handlePointerDown = (e: PointerEvent) => {
-      // Raycast on click
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
@@ -183,15 +179,13 @@ export default function LivingWorldCanvas() {
       // Smooth camera interpolation towards scroll target
       camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCameraY, 0.08);
 
-      // Subtle parallax camera shift with mouse
       if (!prefersReducedMotion) {
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, mouse.x * 0.35, 0.05);
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, mouse.x * 0.25, 0.05);
       }
 
       // Update golden ribbon beads
       ribbon.update(time);
 
-      // Update each living object
       const currentActive = activeObjRef.current;
       const stage = currentStageRef.current;
 
@@ -200,25 +194,24 @@ export default function LivingWorldCanvas() {
         const base = OBJECT_BASE_POSITIONS[obj.id];
 
         if (isFocused) {
-          // Bring the focused object into crisp view on the left/center relative to camera
-          // making room for the floating panel on the right!
+          // Position beside the open experience panel, slightly forward
           const isMobile = window.innerWidth < 768;
-          const targetX = isMobile ? 0 : -1.8;
+          const targetX = isMobile ? 0 : -2.2;
           const targetY = camera.position.y + (isMobile ? 1.0 : 0);
-          const targetZ = 4.8;
+          const targetZ = 3.5;
 
           obj.group.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.08);
         } else {
-          // Ambient roaming movement around base anchor
+          // Ambient roaming movement around base anchor in background
           if (!prefersReducedMotion) {
-            const roamSpeedX = 0.5 + (idx % 3) * 0.15;
-            const roamSpeedY = 0.7 + (idx % 2) * 0.2;
-            const roamAmpX = 0.35;
-            const roamAmpY = 0.25;
+            const roamSpeedX = 0.4 + (idx % 3) * 0.12;
+            const roamSpeedY = 0.6 + (idx % 2) * 0.15;
+            const roamAmpX = 0.25;
+            const roamAmpY = 0.2;
 
             const targetX = base.x + Math.sin(time * roamSpeedX + idx) * roamAmpX;
             const targetY = base.y + Math.cos(time * roamSpeedY + idx) * roamAmpY;
-            const targetZ = base.z + Math.sin(time * 0.4 + idx) * 0.15;
+            const targetZ = base.z + Math.sin(time * 0.3 + idx) * 0.1;
 
             obj.group.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.06);
           } else {
@@ -226,7 +219,6 @@ export default function LivingWorldCanvas() {
           }
         }
 
-        // Run object-specific kinematic update
         obj.update(time, isFocused, stage, mouse);
       });
 
@@ -235,7 +227,6 @@ export default function LivingWorldCanvas() {
 
     animate();
 
-    // 7. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('scroll', handleScroll);
@@ -254,7 +245,7 @@ export default function LivingWorldCanvas() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 pointer-events-none z-20 overflow-hidden"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
       aria-hidden="true"
     />
   );
