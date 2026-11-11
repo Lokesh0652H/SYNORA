@@ -1,576 +1,556 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   ArrowRight,
-  CheckCircle2,
-  Shield,
-  Cpu,
-  Terminal,
   ArrowUpRight,
-  RefreshCw,
-  FileCode,
-  Network,
-  GitCompare,
-  Bot,
+  BookOpen,
   Brain,
+  CheckCircle2,
+  ChevronRight,
+  FileCheck,
+  FileText,
+  GitCompare,
+  Headphones,
   Layers,
+  Lock,
+  Menu,
+  Network,
+  RefreshCw,
+  Search,
+  Shield,
+  ShieldCheck,
   Sparkles,
-  Compass,
+  Users2,
+  X,
+  Bot,
+  Zap,
 } from 'lucide-react';
+
+import HeroMountain3D from '@/components/landing/HeroMountain3D';
+import InteractiveProductDemo from '@/components/landing/InteractiveProductDemo';
+import LearningEcosystemDemo from '@/components/landing/LearningEcosystemDemo';
+import SolutionsAccordion from '@/components/landing/SolutionsAccordion';
+import WorkflowPipelineFlow from '@/components/landing/WorkflowPipelineFlow';
+import KnowledgeGraphInteractive from '@/components/landing/KnowledgeGraphInteractive';
 import ShaderCard, { type ShaderTheme } from '@/components/ShaderCard';
 
 type HighlightKey =
-  | 'replay'
-  | 'drift'
-  | 'signature'
+  | 'model'
+  | 'prompt'
   | 'context'
   | 'policy'
   | 'runs'
-  | 'model'
-  | 'prompt'
-  | 'output';
-
-interface CapabilityFeature {
-  id: HighlightKey;
-  title: string;
-  description: string;
-  theme: ShaderTheme;
-  badge: string;
-  icon: any;
-  targetLine: string;
-}
-
-const CAPABILITIES: CapabilityFeature[] = [
-  {
-    id: 'context',
-    title: 'Cross-Notebook Intelligence',
-    description: 'Connect concepts across multiple notebooks and sources instead of treating each document in a silo.',
-    theme: 'blue',
-    badge: 'GraphRAG',
-    icon: Network,
-    targetLine: 'context',
-  },
-  {
-    id: 'policy',
-    title: 'Contradiction & Evidence Detection',
-    description: 'Identify conflicting statements across uploaded sources and verify every claim against citations.',
-    theme: 'ruby',
-    badge: 'Verification',
-    icon: GitCompare,
-    targetLine: 'policy',
-  },
-  {
-    id: 'replay',
-    title: 'Deterministic Replay',
-    description: 'Re-run historical research queries bit-for-bit across model upgrades with signed citation trails.',
-    theme: 'emerald',
-    badge: 'Zero Drift',
-    icon: RefreshCw,
-    targetLine: 'replay',
-  },
-  {
-    id: 'prompt',
-    title: 'Autonomous Research Agent',
-    description: 'Decompose complex research objectives into multi-step investigative plans with human approval.',
-    theme: 'purple',
-    badge: 'Agentic',
-    icon: Bot,
-    targetLine: 'prompt',
-  },
-  {
-    id: 'signature',
-    title: 'Signed Provenance & Audit Trail',
-    description: 'Every synthesized conclusion is cryptographically hashed with page-level citations for regulatory audit.',
-    theme: 'slate',
-    badge: 'Ed25519',
-    icon: Shield,
-    targetLine: 'signature',
-  },
-  {
-    id: 'output',
-    title: 'Knowledge-to-Action Engine',
-    description: 'Transform verified research directly into structured reports, slide outlines, roadmaps, and task lists.',
-    theme: 'amber',
-    badge: 'Synthesis',
-    icon: Sparkles,
-    targetLine: 'output',
-  },
-];
+  | 'output'
+  | 'replay'
+  | 'drift'
+  | 'signature';
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState<HighlightKey>('replay');
   const [replaying, setReplaying] = useState(false);
-  const platformSectionRef = useRef<HTMLElement>(null);
-  const isHoveringRef = useRef(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Auto-advance highlight subtly when scrolled into view (if not actively hovered)
+  // Scroll position listener for sticky nav background
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (isHoveringRef.current) return;
-      setActiveHighlight((prev) => {
-        const keys: HighlightKey[] = ['context', 'policy', 'replay', 'prompt', 'signature', 'output'];
-        const idx = keys.indexOf(prev);
-        return keys[(idx + 1) % keys.length];
-      });
-    }, 3200);
-
-    return () => clearInterval(timer);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const triggerReplay = () => {
     setReplaying(true);
     setActiveHighlight('replay');
-    setTimeout(() => setReplaying(false), 1400);
+    setTimeout(() => setReplaying(false), 1200);
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F9F7] text-[#1A1A1A] selection:bg-[#1A1A1A] selection:text-white font-sans">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-[#F9F9F7]/90 backdrop-blur-md border-b border-dashed border-[#DCDAD4]">
-        <div className="max-w-[1240px] mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#F5F3ED] text-[#20201D] font-sans selection:bg-[#20201D] selection:text-[#FBFAF6]">
+      {/* =========================================================================
+          SECTION 01: PREMIUM NAVIGATION
+      ========================================================================= */}
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-[#F5F3ED]/92 backdrop-blur-md border-b border-[#DEDAD0] shadow-[0_4px_20px_rgba(32,32,29,0.03)]'
+            : 'bg-[#F5F3ED] border-b border-[#DEDAD0]/60'
+        }`}
+      >
+        <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Left: Brand mark & wordmark */}
           <Link href="/" className="flex items-center gap-2.5 group" title="Synora Home">
-            <span className="w-5 h-5 bg-[#1A1A1A] flex items-center justify-center text-white text-[11px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:rotate-45 group-hover:scale-110 transition-all duration-300">
+            <span className="w-5 h-5 bg-[#20201D] flex items-center justify-center text-[#FBFAF6] text-[10px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:rotate-45 group-hover:scale-110 transition-all duration-300">
               ■
             </span>
-            <span className="font-bold tracking-tight text-lg text-[#1A1A1A] group-hover:text-black transition-colors">SYNORA</span>
+            <span className="font-bold tracking-tight text-lg text-[#20201D] group-hover:tracking-normal transition-all">
+              SYNORA
+            </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-[13px] text-[#666666]">
-            <a href="#how-it-works" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">How it works</a>
-            <a href="#platform" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Intelligence Core</a>
-            <a href="#solutions" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Research Solutions</a>
-            <a href="#security" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Sovereignty</a>
-            <a href="#features" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Signature Pillars</a>
+          {/* Center: Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-7 text-[13px] text-[#77756E] font-medium">
+            <a href="#how-it-works" className="hover:text-[#20201D] transition-colors">How it works</a>
+            <a href="#demo" className="hover:text-[#20201D] transition-colors">Demonstration</a>
+            <a href="#platform" className="hover:text-[#20201D] transition-colors">Intelligence Core</a>
+            <a href="#learning" className="hover:text-[#20201D] transition-colors">Learning Ecosystem</a>
+            <a href="#solutions" className="hover:text-[#20201D] transition-colors">Research Solutions</a>
+            <a href="#security" className="hover:text-[#20201D] transition-colors">Sovereignty</a>
           </nav>
 
+          {/* Right: Actions */}
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-[13px] text-[#666666] hover:text-[#1A1A1A] px-3 py-1.5 transition-colors hidden sm:block"
+              className="text-[13px] font-medium text-[#77756E] hover:text-[#20201D] px-3.5 py-1.5 transition-colors hidden sm:block"
             >
               Sign in
             </Link>
             <Link
               href="/dashboard"
-              className="bg-[#1A1A1A] hover:bg-[#333333] text-white text-[13px] font-medium px-4 py-2 rounded-md transition-all flex items-center gap-1.5 shadow-sm group hover:shadow-md"
+              className="bg-[#20201D] hover:bg-black text-[#FBFAF6] text-[13px] font-medium px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-sm hover:shadow-md hover:scale-102 active:scale-95 group"
             >
-              Open workspace
+              <span>Start workspace</span>
               <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-[#77756E] hover:text-[#20201D] hover:bg-[#EFEBE2] transition-colors"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="relative pt-16 pb-20 border-b border-dashed border-[#DCDAD4] overflow-hidden">
-        <div className="max-w-[1240px] mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE8E0]/70 border border-[#D5D3CB] text-[11px] font-mono tracking-widest text-[#555] uppercase mb-4 shadow-2xs hover:bg-[#EAE8E0] transition-colors cursor-default animate-float-gentle">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]"></span>
-            <span>Cross-Notebook Intelligence & Autonomous Research Studio</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-normal tracking-tight text-[#1A1A1A] max-w-4xl mx-auto leading-[1.08]">
-            Don’t just store knowledge. <br className="hidden sm:inline" />
-            <span className="italic font-serif">Understand, challenge, and act.</span>
-          </h1>
-
-          {/* Stippled Mountain Peak Engraving */}
-          <div className="relative my-8 sm:my-10 max-w-[560px] mx-auto flex justify-center animate-float-slow">
-            <Image
-              src="/illustrations/hero_mountain.png"
-              alt="Hand-drawn stippled mountain peak"
-              width={560}
-              height={360}
-              priority
-              className="w-full max-w-[500px] h-auto object-contain filter contrast-105 hover:scale-103 transition-transform duration-500"
-            />
-          </div>
-
-          {/* Hero Bottom Row */}
-          <div className="max-w-[960px] mx-auto mt-6 flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-dashed border-[#DCDAD4]/80 text-left">
-            <p className="text-sm text-[#666666] max-w-md leading-relaxed">
-              SYNORA connects concepts across your entire document library, discovers contradictions, verifies claims with page-level citations, and turns research into action.
-            </p>
-
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <Link
-                href="/dashboard"
-                className="bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium px-6 py-2.5 rounded-md transition-all shadow-sm flex items-center gap-2 group hover:shadow-md"
-              >
-                Start research session
-                <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-b border-[#DEDAD0] bg-[#F5F3ED] px-6 py-5 space-y-4 animate-scale-in">
+            <nav className="flex flex-col gap-3 text-sm text-[#77756E] font-medium">
               <a
                 href="#how-it-works"
-                className="text-sm font-medium text-[#1A1A1A] hover:text-[#555] px-4 py-2.5 transition-colors flex items-center gap-1.5 group"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
               >
-                Explore intelligence <ArrowUpRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                How it works
               </a>
+              <a
+                href="#demo"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
+              >
+                Interactive Demonstration
+              </a>
+              <a
+                href="#platform"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
+              >
+                Intelligence Core
+              </a>
+              <a
+                href="#learning"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
+              >
+                Learning Ecosystem
+              </a>
+              <a
+                href="#solutions"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
+              >
+                Research Solutions
+              </a>
+              <a
+                href="#security"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#20201D]"
+              >
+                Privacy & Sovereignty
+              </a>
+            </nav>
+            <div className="pt-3 border-t border-[#DEDAD0] flex items-center justify-between">
+              <Link href="/login" className="text-xs font-semibold text-[#20201D]">
+                Sign in
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-xs font-semibold px-4 py-2 rounded-lg bg-[#20201D] text-white"
+              >
+                Open workspace →
+              </Link>
             </div>
           </div>
+        )}
+      </header>
+
+      {/* =========================================================================
+          SECTION 02: CINEMATIC HERO
+      ========================================================================= */}
+      <section className="relative pt-16 sm:pt-20 pb-16 sm:pb-24 overflow-hidden border-b border-[#DEDAD0]">
+        <div className="max-w-[1240px] mx-auto px-6 text-center">
+          {/* Editorial Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EFEBE2] border border-[#DEDAD0] text-[11px] font-mono tracking-widest text-[#858875] uppercase mb-6 shadow-2xs cursor-default animate-float-gentle">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#858875]" />
+            <span>CROSS-NOTEBOOK INTELLIGENCE · RESEARCH STUDIO</span>
+          </div>
+
+          {/* Master Headline */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[76px] font-normal tracking-tight text-[#20201D] max-w-4xl mx-auto leading-[1.08] mb-6 font-serif">
+            Don’t just store knowledge.{' '}
+            <br className="hidden sm:inline" />
+            <span className="italic">Understand, challenge, and act.</span>
+          </h1>
+
+          {/* Supporting Statement */}
+          <p className="text-sm sm:text-base md:text-lg text-[#77756E] max-w-2xl mx-auto leading-relaxed mb-8">
+            SYNORA transforms scattered papers, clinical trials, and technical documentation into connected knowledge, verifiable intelligence, and actionable outcomes.
+          </p>
+
+          {/* Primary Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+            <Link
+              href="/dashboard"
+              className="bg-[#20201D] hover:bg-black text-[#FBFAF6] text-sm font-medium px-6 py-3 rounded-xl transition-all shadow-sm hover:shadow-md hover:scale-102 active:scale-95 flex items-center gap-2 group"
+            >
+              <span>Start research workspace</span>
+              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+
+            <a
+              href="#how-it-works"
+              className="bg-[#FBFAF6] hover:bg-[#EFEBE2] text-[#20201D] text-sm font-medium px-5 py-3 rounded-xl border border-[#DEDAD0] transition-all hover:border-[#858875] flex items-center gap-1.5 group"
+            >
+              <span>Explore intelligence</span>
+              <ArrowUpRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+          </div>
+
+          {/* 3D Topographical Architectural Mountain Centerpiece */}
+          <HeroMountain3D />
         </div>
       </section>
 
-      {/* 3-Step Process: Connect, Verify, Act */}
-      <section id="how-it-works" className="border-b border-dashed border-[#DCDAD4]">
-        <div className="max-w-[1240px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-dashed divide-[#DCDAD4]">
-            {/* Column 1: Header */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-4">
-                  How it works
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-normal tracking-tight leading-snug">
-                  From scattered papers to verifiable intelligence.
-                </h2>
-              </div>
-              <div className="mt-8 text-xs text-[#8C8E85] font-mono">
-                INTELLIGENCE CORE / SEC.01
-              </div>
-            </div>
+      {/* =========================================================================
+          SECTION 03: THE RESEARCH TRANSFORMATION (Connect, Verify, Act)
+      ========================================================================= */}
+      <section id="how-it-works" className="bg-[#EFEBE2] border-b border-[#DEDAD0] py-20 sm:py-24">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="max-w-2xl mb-14 text-left">
+            <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+              TRANSFORMATION METHODOLOGY · SEC. 01
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+              From scattered papers to verifiable intelligence.
+            </h2>
+            <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed">
+              Three interconnected phases that turn passive document repositories into active synthesis engines.
+            </p>
+          </div>
 
+          {/* 3 Step Interactive Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {/* Step 1: Connect */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
-              <div className="h-44 flex items-center justify-center mb-6">
-                <Image
-                  src="/illustrations/step_capture.png"
-                  alt="Surveyor tripod instrument"
-                  width={160}
-                  height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
-                />
-              </div>
+            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-3xl p-8 flex flex-col justify-between hover-lift transition-all duration-300 group cursor-pointer">
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">01</div>
-                <h3 className="text-lg font-semibold mb-2">Connect</h3>
-                <p className="text-xs text-[#666666] leading-relaxed">
-                  Cross-Notebook Intelligence maps concepts, authors, entities, and citations across all your private collections.
+                <div className="h-44 flex items-center justify-center mb-6">
+                  <Image
+                    src="/illustrations/step_capture.png"
+                    alt="Surveyor tripod instrument"
+                    width={180}
+                    height={190}
+                    className="max-h-36 w-auto object-contain filter contrast-105 group-hover:scale-108 transition-transform duration-300"
+                  />
+                </div>
+                <div className="text-xs font-mono text-[#858875] mb-1 font-semibold group-hover:text-[#20201D] transition-colors">
+                  01 / INGESTION & TOPOLOGY
+                </div>
+                <h3 className="text-xl font-serif text-[#20201D] mb-2">Connect</h3>
+                <p className="text-xs sm:text-sm text-[#77756E] leading-relaxed">
+                  Bring PDF papers, clinical trial protocols, technical reports, and YouTube transcripts together into a single unified knowledge graph.
                 </p>
+              </div>
+              <div className="pt-6 border-t border-[#E8E4DA] mt-6 text-[11px] font-mono text-[#858875] flex items-center justify-between">
+                <span>Multi-Source Chunking</span>
+                <span className="text-[#20201D] font-semibold">Explore ↗</span>
               </div>
             </div>
 
             {/* Step 2: Verify */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
-              <div className="h-44 flex items-center justify-center mb-6">
-                <Image
-                  src="/illustrations/step_pin.png"
-                  alt="Triangulation monument milestone"
-                  width={160}
-                  height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
-                />
-              </div>
+            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-3xl p-8 flex flex-col justify-between hover-lift transition-all duration-300 group cursor-pointer">
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">02</div>
-                <h3 className="text-lg font-semibold mb-2">Verify</h3>
-                <p className="text-xs text-[#666666] leading-relaxed">
-                  Contradiction Detection automatically highlights conflicting claims and pins every conclusion to an exact passage.
+                <div className="h-44 flex items-center justify-center mb-6">
+                  <Image
+                    src="/illustrations/step_pin.png"
+                    alt="Triangulation monument milestone"
+                    width={180}
+                    height={190}
+                    className="max-h-36 w-auto object-contain filter contrast-105 group-hover:scale-108 transition-transform duration-300"
+                  />
+                </div>
+                <div className="text-xs font-mono text-[#858875] mb-1 font-semibold group-hover:text-[#20201D] transition-colors">
+                  02 / TRUTH & CITATION AUDIT
+                </div>
+                <h3 className="text-xl font-serif text-[#20201D] mb-2">Verify</h3>
+                <p className="text-xs sm:text-sm text-[#77756E] leading-relaxed">
+                  Contradiction Detection automatically highlights conflicting claims and pins every assertion to exact page and paragraph coordinates.
                 </p>
+              </div>
+              <div className="pt-6 border-t border-[#E8E4DA] mt-6 text-[11px] font-mono text-[#858875] flex items-center justify-between">
+                <span>Zero Hallucination Proof</span>
+                <span className="text-[#20201D] font-semibold">Explore ↗</span>
               </div>
             </div>
 
             {/* Step 3: Act */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
-              <div className="h-44 flex items-center justify-center mb-6">
-                <Image
-                  src="/illustrations/step_prove.png"
-                  alt="Summit cairn with flag"
-                  width={160}
-                  height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
-                />
-              </div>
+            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-3xl p-8 flex flex-col justify-between hover-lift transition-all duration-300 group cursor-pointer">
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">03</div>
-                <h3 className="text-lg font-semibold mb-2">Act</h3>
-                <p className="text-xs text-[#666666] leading-relaxed">
-                  Knowledge-to-Action converts findings into executive reports, presentations, roadmaps, and adaptive study plans.
+                <div className="h-44 flex items-center justify-center mb-6">
+                  <Image
+                    src="/illustrations/step_prove.png"
+                    alt="Summit cairn with flag"
+                    width={180}
+                    height={190}
+                    className="max-h-36 w-auto object-contain filter contrast-105 group-hover:scale-108 transition-transform duration-300"
+                  />
+                </div>
+                <div className="text-xs font-mono text-[#858875] mb-1 font-semibold group-hover:text-[#20201D] transition-colors">
+                  03 / ACTIONABLE MASTERY
+                </div>
+                <h3 className="text-xl font-serif text-[#20201D] mb-2">Act</h3>
+                <p className="text-xs sm:text-sm text-[#77756E] leading-relaxed">
+                  Knowledge-to-Action converts verified findings into executive decision briefs, implementation roadmaps, dynamic flashcards, and dual-speaker audio.
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Platform & Interactive Call Record Terminal with Live Hover/Scroll Sync */}
-      <section
-        id="platform"
-        ref={platformSectionRef}
-        className="border-b border-dashed border-[#DCDAD4] py-16 sm:py-20"
-      >
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Left: Platform Copy & Live Synchronized Call Record */}
-            <div className="lg:col-span-5 flex flex-col">
-              <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-3">
-                INTELLIGENCE CORE
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-normal tracking-tight mb-4">
-                Built for systems that get audited.
-              </h2>
-              <p className="text-sm text-[#666666] leading-relaxed mb-8">
-                Every query, chunk retrieval, and reasoning step is recorded with signed provenance. Hover or scroll past any capability on the right to see its corresponding record line light up.
-              </p>
-
-              {/* Monospace Interactive Call Record Box matching Image 3 with pixel precision */}
-              <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] font-mono text-[13px] leading-relaxed hover-lift transition-all duration-300">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-3 text-[#7A7C75]">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span className="font-mono text-[#555] text-sm font-normal">Call record</span>
-                  </div>
-                  <span className="text-xs text-[#7A7C75] font-mono">call_7f3a2c · 2026-03-14 09:12Z</span>
-                </div>
-
-                <div className="border-t border-[#EFEFEA] my-3" />
-
-                {/* Key-Value Rows */}
-                <div className="py-2 space-y-2.5">
-                  {/* model */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('model');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'model'
-                        ? 'bg-black/[0.05] text-black font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">model</span>
-                    <span className="text-[#1E201D] flex-1">gemini-2.5-flash · temp 0 · seed 1182</span>
-                  </div>
-
-                  {/* prompt */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('prompt');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'prompt'
-                        ? 'bg-purple-50 text-purple-950 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">prompt</span>
-                    <span className="text-[#1E201D] flex-1">sha256 3e1f...a9c2</span>
-                  </div>
-
-                  {/* context */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('context');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'context'
-                        ? 'bg-blue-50 text-blue-950 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">context</span>
-                    <span className="text-[#1E201D] flex-1">4 docs · sha256 b71d...04ee</span>
-                  </div>
-
-                  {/* policy */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('policy');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'policy'
-                        ? 'bg-teal-50 text-teal-950 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">policy</span>
-                    <span className="text-[#0D9488] font-medium flex-1">pii · tone · scope — 3/3 passed</span>
-                  </div>
-
-                  {/* runs in */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('runs');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'runs'
-                        ? 'bg-slate-100 text-slate-900 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">runs in</span>
-                    <span className="text-[#4A4D46] flex-1">managed cloud · eu-west</span>
-                  </div>
-
-                  {/* output */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('output');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'output'
-                        ? 'bg-amber-50 text-amber-950 font-bold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">output</span>
-                    <span className="font-bold text-[#111] flex-1">"Approve — tier B rating"</span>
-                  </div>
-
-                  {/* replay row (pill container matching Image 3 with blue Replay button) */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('replay');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'replay' || replaying
-                        ? 'bg-[#EEEDE8] border border-black/[0.08] shadow-xs'
-                        : 'bg-[#F4F4F0] border border-black/[0.04] hover:bg-[#EBEBE5]'
-                    }`}
-                  >
-                    <div className="flex items-center flex-1">
-                      <span className="w-24 shrink-0 text-[#7A7C75]">replay</span>
-                      <span className="text-[#1E201D] font-normal">
-                        {replaying ? 'replaying bit-for-bit...' : 'verified · zero divergence'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={triggerReplay}
-                      className="text-xs text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1.5 font-sans font-medium transition-all ml-4 shrink-0 active:scale-95 group/btn"
-                    >
-                      <RefreshCw size={12} className={`transition-transform ${replaying ? 'animate-spin' : 'group-hover/btn:rotate-180 duration-500'}`} />
-                      <span>Replay</span>
-                    </button>
-                  </div>
-
-                  {/* drift */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('drift');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'drift'
-                        ? 'bg-purple-50 text-purple-950 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">drift</span>
-                    <span className="text-[#4A4D46] flex-1">none in 41 days</span>
-                  </div>
-
-                  {/* signature */}
-                  <div
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight('signature');
-                    }}
-                    onMouseLeave={() => (isHoveringRef.current = false)}
-                    className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                      activeHighlight === 'signature'
-                        ? 'bg-slate-100 text-slate-900 font-semibold'
-                        : 'hover:bg-black/[0.02]'
-                    }`}
-                  >
-                    <span className="w-24 shrink-0 text-[#7A7C75]">signature</span>
-                    <span className="text-[#4A4D46] flex-1">ed25519 9c0b...7712</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-[#EFEFEA] my-3" />
-
-                {/* Footer matching Image 3 */}
-                <div className="flex items-center gap-2 pt-1 text-xs text-[#4A4D46]">
-                  <CheckCircle2 size={15} className="text-[#059669] shrink-0" />
-                  <span>Replayed six months later — the same output, byte for byte</span>
-                </div>
+              <div className="pt-6 border-t border-[#E8E4DA] mt-6 text-[11px] font-mono text-[#858875] flex items-center justify-between">
+                <span>Export to DOCX, PDF & MD</span>
+                <span className="text-[#20201D] font-semibold">Explore ↗</span>
               </div>
             </div>
-
-            {/* Right: Ashish Gogula Fluid Shader Cards Grid with Live Hover Triggers */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {CAPABILITIES.map((cap) => {
-                const Icon = cap.icon;
-                const isSelected = activeHighlight === cap.id;
-                return (
-                  <div
-                    key={cap.id}
-                    onMouseEnter={() => {
-                      isHoveringRef.current = true;
-                      setActiveHighlight(cap.id);
-                    }}
-                    onMouseLeave={() => {
-                      isHoveringRef.current = false;
-                    }}
-                    className={`transition-transform duration-200 ${
-                      isSelected ? 'ring-2 ring-black/20 rounded-[24px]' : ''
-                    }`}
-                  >
-                    <ShaderCard
-                      title={cap.title}
-                      description={cap.description}
-                      theme={cap.theme}
-                      icon={<Icon size={19} />}
-                      badge={cap.badge}
-                      meta={
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span>Lights up line: <code className="font-mono text-[10px] font-bold">{cap.targetLine}</code></span>
-                          <span>SYNORA Core ↗</span>
-                        </div>
-                      }
-                    />
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* The 10 Signature Features Section */}
-      <section id="features" className="border-b border-dashed border-[#DCDAD4] py-16 sm:py-20 bg-[#F4F4F0]">
+      {/* =========================================================================
+          SECTION 04: INTERACTIVE PRODUCT DEMONSTRATION (Living SYNORA Showcase)
+      ========================================================================= */}
+      <section id="demo" className="bg-[#FBFAF6] border-b border-[#DEDAD0] py-20 sm:py-28">
         <div className="max-w-[1240px] mx-auto px-6">
-          <div className="max-w-2xl mb-12">
-            <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-2">
-              SIGNATURE IDENTITY
+          <div className="max-w-2xl mb-12 text-left">
+            <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+              INTERACTIVE PRODUCT SHOWCASE · SEC. 02
             </span>
-            <h2 className="text-3xl sm:text-5xl font-normal tracking-tight mb-4">
-              Ten differentiators that set SYNORA apart.
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+              Research is more than asking questions.
             </h2>
-            <p className="text-sm text-[#666666] leading-relaxed">
-              Not every feature receives equal development priority. These ten capabilities sit at the very center of our product architecture.
+            <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed">
+              Test drive the live reasoning pipeline below. Click citations to inspect exact source passages or toggle between grounded answer, concept graph, flashcards, and audio.
             </p>
           </div>
 
+          <InteractiveProductDemo />
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 05: INTELLIGENCE CORE (Call Record + Dynamic Knowledge Graph + 10 Pillars)
+      ========================================================================= */}
+      <section id="platform" className="bg-[#F5F3ED] border-b border-[#DEDAD0] py-20 sm:py-28">
+        <div className="max-w-[1240px] mx-auto px-6">
+          <div className="max-w-2xl mb-14 text-left">
+            <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+              INTELLIGENCE ARCHITECTURE · SEC. 03
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+              An entire research ecosystem. One intelligence layer.
+            </h2>
+            <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed">
+              Every query, chunk retrieval, and reasoning step is recorded with cryptographic provenance.
+            </p>
+          </div>
+
+          {/* Top Row: Alim QED Call Record Card + Interactive Knowledge Graph */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
+            {/* Left: Alim QED Call Record Box matching user's Image 3 reference */}
+            <div className="lg:col-span-5 bg-white border border-[#DEDAD0] rounded-3xl p-6 sm:p-7 shadow-[0_4px_24px_rgba(32,32,29,0.03)] font-mono text-[13px] leading-relaxed hover-lift transition-all duration-300">
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 text-[#77756E]">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <span className="font-mono text-[#555] text-sm font-normal">Call record</span>
+                </div>
+                <span className="text-xs text-[#77756E] font-mono">call_7f3a2c · 2026-03-14 09:12Z</span>
+              </div>
+
+              <div className="border-t border-[#E8E4DA] my-3" />
+
+              {/* Key-Value Rows */}
+              <div className="py-2 space-y-2.5">
+                {/* model */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('model')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'model'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">model</span>
+                  <span className="text-[#20201D] flex-1">gemini-2.5-flash · temp 0 · seed 1182</span>
+                </div>
+
+                {/* prompt */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('prompt')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'prompt'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">prompt</span>
+                  <span className="text-[#20201D] flex-1">sha256 3e1f...a9c2</span>
+                </div>
+
+                {/* context */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('context')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'context'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">context</span>
+                  <span className="text-[#20201D] flex-1">4 docs · sha256 b71d...04ee</span>
+                </div>
+
+                {/* policy */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('policy')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'policy'
+                      ? 'bg-emerald-50 text-emerald-950 font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">policy</span>
+                  <span className="text-[#858875] font-semibold flex-1">pii · tone · scope — 3/3 passed</span>
+                </div>
+
+                {/* runs in */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('runs')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'runs'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">runs in</span>
+                  <span className="text-[#77756E] flex-1">managed cloud · eu-west</span>
+                </div>
+
+                {/* output */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('output')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'output'
+                      ? 'bg-amber-50 text-amber-950 font-bold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">output</span>
+                  <span className="font-bold text-[#111] flex-1">"Approve — tier B rating"</span>
+                </div>
+
+                {/* replay row matching Image 3 with blue Replay button */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('replay')}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                    activeHighlight === 'replay' || replaying
+                      ? 'bg-[#EFEBE2] border border-[#20201D]/20 shadow-xs'
+                      : 'bg-[#F5F3ED] border border-[#DEDAD0] hover:bg-[#EFEBE2]'
+                  }`}
+                >
+                  <div className="flex items-center flex-1">
+                    <span className="w-24 shrink-0 text-[#77756E]">replay</span>
+                    <span className="text-[#20201D] font-normal">
+                      {replaying ? 'replaying bit-for-bit...' : 'verified · zero divergence'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={triggerReplay}
+                    className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1.5 font-sans font-medium transition-all ml-4 shrink-0 active:scale-95 group/btn"
+                  >
+                    <RefreshCw
+                      size={12}
+                      className={`transition-transform ${replaying ? 'animate-spin' : 'group-hover/btn:rotate-180 duration-500'}`}
+                    />
+                    <span>Replay</span>
+                  </button>
+                </div>
+
+                {/* drift */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('drift')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'drift'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">drift</span>
+                  <span className="text-[#77756E] flex-1">none in 41 days</span>
+                </div>
+
+                {/* signature */}
+                <div
+                  onMouseEnter={() => setActiveHighlight('signature')}
+                  className={`flex items-baseline px-2.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeHighlight === 'signature'
+                      ? 'bg-[#EFEBE2] text-[#20201D] font-semibold'
+                      : 'hover:bg-black/[0.02]'
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[#77756E]">signature</span>
+                  <span className="text-[#77756E] flex-1">ed25519 9c0b...7712</span>
+                </div>
+              </div>
+
+              <div className="border-t border-[#E8E4DA] my-3" />
+
+              {/* Footer matching Image 3 */}
+              <div className="flex items-center gap-2 pt-1 text-xs text-[#77756E]">
+                <CheckCircle2 size={15} className="text-emerald-700 shrink-0" />
+                <span>Replayed six months later — the same output, byte for byte</span>
+              </div>
+            </div>
+
+            {/* Right: Interactive Knowledge Graph */}
+            <div className="lg:col-span-7">
+              <KnowledgeGraphInteractive />
+            </div>
+          </div>
+
+          {/* Ten Signature Differentiators Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               {
                 num: '01',
                 title: 'Cross-Notebook Intelligence',
                 badge: 'Core',
-                desc: 'Understand relationships across your entire knowledge library rather than isolating documents into separate folders.',
+                desc: 'Understand relationships across your entire knowledge library rather than isolating documents into separate siloed folders.',
               },
               {
                 num: '02',
@@ -629,279 +609,292 @@ export default function LandingPage() {
             ].map((f) => (
               <div
                 key={f.num}
-                className="bg-white border border-[#E0DED7] rounded-2xl p-6 sm:p-7 shadow-xs hover:border-black/30 hover-lift transition-all duration-300 group cursor-pointer relative overflow-hidden"
+                className="bg-white border border-[#DEDAD0] rounded-3xl p-7 shadow-xs hover:border-[#20201D]/40 hover-lift transition-all duration-300 group cursor-default relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-[#1A1A1A] transition-colors duration-300" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-[#20201D] transition-colors duration-300" />
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono font-bold text-[#8C8E85] group-hover:text-black transition-colors">
+                  <span className="text-xs font-mono font-bold text-[#858875] group-hover:text-[#20201D] transition-colors">
                     {f.num}
                   </span>
-                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#F4F4F0] text-[#666] border border-black/[0.05] group-hover:border-black/20 group-hover:bg-[#EAEAE5] transition-all">
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#EFEBE2] text-[#77756E] border border-[#DEDAD0] group-hover:border-[#20201D]/20 transition-all">
                     {f.badge}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 group-hover:translate-x-0.5 transition-transform duration-200">{f.title}</h3>
-                <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-serif font-semibold text-[#20201D] mb-2 group-hover:translate-x-0.5 transition-transform duration-200">
+                  {f.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#77756E] leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Solutions Section */}
-      <section id="solutions" className="border-b border-dashed border-[#DCDAD4] py-16 sm:py-20">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-2">
-                RESEARCH APPLICATIONS
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-normal tracking-tight">
-                Where being wrong is expensive.
-              </h2>
-            </div>
-            <p className="text-sm text-[#666666] max-w-md mt-4 md:mt-0 leading-relaxed">
-              SYNORA earns its place where an insight must be defended later — to an academic committee, an investment board, or a court of law.
-            </p>
-          </div>
-
-          {/* Solutions Rows */}
-          <div className="divide-y divide-dashed divide-[#DCDAD4] border-y border-dashed border-[#DCDAD4]">
-            {[
-              {
-                title: 'Cross-Disciplinary Academic Research',
-                desc: 'Connect papers across separate fields, discover unexpected conceptual links, and detect unaddressed gaps in the literature.',
-              },
-              {
-                title: 'Competitive & Strategic Intelligence',
-                desc: 'Track research evolution across corporate disclosures, earnings transcripts, and patents with zero hallucination risk.',
-              },
-              {
-                title: 'Systematic Literature & Clinical Review',
-                desc: 'Compare trials, isolate conflicting methodologies, and extract structured tables directly into meta-analyses.',
-              },
-              {
-                title: 'Legal & Regulatory Compliance Audits',
-                desc: 'Verify policy adherence and contractual clauses with a tamper-evident, cryptographically signed citation behind every finding.',
-              },
-            ].map((sol, i) => (
-              <div
-                key={i}
-                className="py-6 sm:py-8 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-[#F2F2EC] px-4 -mx-4 rounded-lg transition-colors cursor-pointer"
-              >
-                <div className="md:w-1/3">
-                  <h3 className="text-lg sm:text-xl font-medium text-[#1A1A1A] group-hover:text-black">
-                    {sol.title}
-                  </h3>
-                </div>
-                <div className="md:w-1/2 text-xs sm:text-sm text-[#666666]">
-                  {sol.desc}
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-black/10 group-hover:bg-[#1A1A1A] group-hover:text-white transition-all">
-                    <ArrowRight size={14} />
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* =========================================================================
+          SECTION 06: THE LEARNING INTELLIGENCE ECOSYSTEM
+      ========================================================================= */}
+      <section id="learning" className="bg-[#EAE6DC] border-b border-[#DEDAD0] py-20 sm:py-28">
+        <div className="max-w-[1240px] mx-auto px-6 mb-14 text-left">
+          <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+            LEARNING INTELLIGENCE · SEC. 04
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+            Research doesn’t end with understanding.
+          </h2>
+          <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed max-w-2xl">
+            SYNORA transforms raw literature into durable cognitive mastery through active recall, two-speaker debates, Socratic interrogation, and adaptive assessment.
+          </p>
         </div>
+
+        <LearningEcosystemDemo />
       </section>
 
-      {/* Security Section */}
-      <section id="security" className="border-b border-dashed border-[#DCDAD4] py-16 sm:py-20">
+      {/* =========================================================================
+          SECTION 07: WHY SYNORA IS DIFFERENT (Where being wrong is expensive)
+      ========================================================================= */}
+      <section id="solutions" className="bg-[#FBFAF6] border-b border-[#DEDAD0] py-20 sm:py-28">
+        <div className="max-w-[1240px] mx-auto px-6 mb-14 text-left">
+          <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+            RESEARCH SOLUTIONS · SEC. 05
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+            Where being wrong is expensive.
+          </h2>
+          <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed max-w-2xl">
+            Engineered for high-stakes inquiry where hallucinations carry severe clinical, legal, or strategic consequences. Click any domain to expand its verified workflow.
+          </p>
+        </div>
+
+        <SolutionsAccordion />
+      </section>
+
+      {/* =========================================================================
+          SECTION 08: RESEARCH PRIVACY & DATA SOVEREIGNTY
+      ========================================================================= */}
+      <section id="security" className="bg-[#E8E4DA] border-b border-[#DEDAD0] py-20 sm:py-28">
         <div className="max-w-[1240px] mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left: Security Stats */}
-            <div className="lg:col-span-6">
-              <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-2">
-                SOVEREIGN DATA PERIMETER
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-normal tracking-tight mb-8">
-                Your research never leaves <br />
-                your perimeter.
-              </h2>
-
-              <div className="space-y-8 divide-y divide-dashed divide-[#DCDAD4]">
-                <div className="pt-2">
-                  <div className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#1A1A1A] mb-1">
-                    0
-                  </div>
-                  <div className="font-semibold text-sm mb-1">Bytes trained on or cached in public models</div>
-                  <div className="text-xs text-[#666666]">
-                    Deploy in your private cloud, on-premise, or in air-gapped secure enclaves with zero data retention.
-                  </div>
-                </div>
-
-                <div className="pt-6">
-                  <div className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#1A1A1A] mb-1">
-                    100%
-                  </div>
-                  <div className="font-semibold text-sm mb-1">Customer-held keys & private vectors</div>
-                  <div className="text-xs text-[#666666]">
-                    Row Level Security (RLS) ensures vector embeddings are isolated strictly to authenticated notebook owners.
-                  </div>
-                </div>
-
-                <div className="pt-6">
-                  <div className="text-4xl sm:text-5xl font-semibold tracking-tight text-[#1A1A1A] mb-1">
-                    24/7
-                  </div>
-                  <div className="font-semibold text-sm mb-1">Signed provenance verification</div>
-                  <div className="text-xs text-[#666666]">
-                    Every chunk citation maps to its exact page coordinate with cryptographic verification.
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-dashed border-[#DCDAD4] text-[11px] font-mono text-[#8C8E85]">
-                SOC 2 TYPE II · ISO 27001 · HIPAA · GDPR COMPLIANT ARCHITECTURE
-              </div>
-            </div>
-
-            {/* Right: Engraved Cliff Cottage Illustration */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="max-w-[500px]">
+            {/* Left: Fortress Pen & Ink Engraving */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="p-8 rounded-3xl bg-[#FBFAF6] border border-[#DEDAD0] shadow-sm max-w-md w-full text-center hover-lift transition-all">
                 <Image
                   src="/illustrations/security_cottage.png"
-                  alt="Stippled cliffside fortress cottage"
-                  width={520}
-                  height={380}
-                  className="w-full h-auto object-contain filter contrast-105"
+                  alt="Sovereign research fortress"
+                  width={340}
+                  height={280}
+                  className="w-full h-auto object-contain filter contrast-105 mb-4 mx-auto"
                 />
+                <div className="text-xs font-mono text-[#858875] tracking-widest uppercase">
+                  SOVEREIGN ENCLAVE · ROW-LEVEL SECURITY
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Security & Privacy Commitments */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              <div>
+                <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+                  PRIVACY & DATA SOVEREIGNTY · SEC. 06
+                </span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+                  Your research never leaves your perimeter.
+                </h2>
+                <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed">
+                  We believe institutional knowledge must remain sovereign. SYNORA is architected with strict tenant isolation, signed provenance, and zero third-party model training.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {[
+                  {
+                    title: 'Private Isolated Notebooks',
+                    desc: 'Each notebook operates as an air-gapped knowledge enclave accessible only by authorized team credentials.',
+                  },
+                  {
+                    title: 'Row-Level Security (RLS)',
+                    desc: 'Database access policies enforce cryptographic boundaries at the PostgreSQL kernel level.',
+                  },
+                  {
+                    title: 'Zero Model Training',
+                    desc: 'Your uploaded source PDFs, notes, and citations are never used to train foundation models.',
+                  },
+                  {
+                    title: 'Signed Provenance Trails',
+                    desc: 'Every synthesized output is hashed with SHA-256 for deterministic compliance audit.',
+                  },
+                ].map((item, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-[#FBFAF6] border border-[#DEDAD0]">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <ShieldCheck size={16} className="text-[#858875]" />
+                      <h4 className="text-xs font-semibold text-[#20201D]">{item.title}</h4>
+                    </div>
+                    <p className="text-[11px] text-[#77756E] leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-[#20201D] hover:underline"
+                >
+                  Inspect enterprise sovereignty documentation <ArrowRight size={13} />
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Production Testimonial Section */}
-      <section className="border-b border-dashed border-[#DCDAD4] py-16 sm:py-20 bg-[#F4F4F0]">
-        <div className="max-w-[1240px] mx-auto px-6">
-          <div className="max-w-3xl">
-            <span className="text-[11px] font-mono text-[#8C8E85] uppercase tracking-wider block mb-4">
-              PRODUCT PROMISE
-            </span>
-            <blockquote className="text-2xl sm:text-4xl font-normal tracking-tight text-[#1A1A1A] leading-snug mb-4">
-              “Don’t just store knowledge. Understand it, connect it, challenge it, learn from it, and turn it into something useful.”
-            </blockquote>
-            <cite className="text-xs sm:text-sm text-[#737373] font-mono not-italic block mb-12">
-              The Synora Research Philosophy
-            </cite>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-8 border-t border-dashed border-[#DCDAD4]">
-            <div>
-              <div className="text-4xl sm:text-5xl font-medium tracking-tight text-[#1A1A1A] mb-1">
-                3.2<span className="text-2xl font-normal text-[#8C8E85]">M</span>
-              </div>
-              <div className="text-xs text-[#666666]">Citations verified without divergence</div>
-            </div>
-
-            <div>
-              <div className="text-4xl sm:text-5xl font-medium tracking-tight text-[#1A1A1A] mb-1">
-                100<span className="text-2xl font-normal text-[#8C8E85]">%</span>
-              </div>
-              <div className="text-xs text-[#666666]">Ground-truth evidence linkage across all runs</div>
-            </div>
-
-            <div>
-              <div className="text-4xl sm:text-5xl font-medium tracking-tight text-[#1A1A1A] mb-1">
-                0
-              </div>
-              <div className="text-xs text-[#666666]">Hallucinated claims accepted by Policy Gates</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pre-Footer Call to Action */}
-      <section className="border-b border-dashed border-[#DCDAD4] py-20 text-center">
-        <div className="max-w-[800px] mx-auto px-6">
-          <h2 className="text-3xl sm:text-5xl font-normal tracking-tight mb-4">
-            Put your research on the record.
+      {/* =========================================================================
+          SECTION 09: RESEARCH WORKFLOW SHOWCASE (Flow Diagram)
+      ========================================================================= */}
+      <section className="bg-[#EFEBE2] border-b border-[#DEDAD0] py-20 sm:py-28">
+        <div className="max-w-[1240px] mx-auto px-6 mb-14 text-left">
+          <span className="text-[11px] font-mono tracking-widest text-[#858875] uppercase block mb-2 font-semibold">
+            PIPELINE TELEMETRY · SEC. 07
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-[#20201D] tracking-tight">
+            The Complete Research Journey.
           </h2>
-          <p className="text-sm text-[#666666] max-w-lg mx-auto mb-8 leading-relaxed">
-            Organize complex papers, test conflicting hypotheses, and generate cited intelligence in minutes.
+          <p className="text-sm sm:text-base text-[#77756E] mt-3 leading-relaxed max-w-2xl">
+            From raw source ingestion to verifiable executive decisions. Click any stage to inspect the technical specification and latency benchmarks.
           </p>
-          <div className="flex items-center justify-center gap-4">
+        </div>
+
+        <WorkflowPipelineFlow />
+      </section>
+
+      {/* =========================================================================
+          SECTION 10: FINAL CONVERSION & PANORAMIC EDITORIAL FOOTER
+      ========================================================================= */}
+      <section className="bg-[#252520] text-[#F5F3ED] py-24 sm:py-32 relative overflow-hidden">
+        <div className="max-w-[1140px] mx-auto px-6 text-center relative z-10">
+          <span className="text-[11px] font-mono tracking-widest text-[#D6C9B5] uppercase block mb-4">
+            BEGIN REVOLUTIONARY INQUIRY
+          </span>
+
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight mb-6 leading-tight max-w-3xl mx-auto">
+            Your next breakthrough starts with understanding.
+          </h2>
+
+          <p className="text-sm sm:text-base text-[#D6C9B5]/80 max-w-xl mx-auto leading-relaxed mb-10">
+            Bring your sources together. Discover what connects them. Build knowledge that goes beyond the page.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/dashboard"
-              className="bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium px-6 py-3 rounded-md transition-all shadow-sm flex items-center gap-2"
+              className="bg-[#FBFAF6] hover:bg-white text-[#20201D] text-sm font-semibold px-7 py-3.5 rounded-xl transition-all shadow-md hover:scale-102 active:scale-95 flex items-center gap-2 group"
             >
-              Open workspace
-              <ArrowRight size={14} />
+              <span>Start your research</span>
+              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
+
             <Link
-              href="/signup"
-              className="border border-[#DCDAD4] hover:bg-white text-sm font-medium px-5 py-3 rounded-md transition-all text-[#1A1A1A]"
+              href="/dashboard"
+              className="bg-transparent hover:bg-white/10 text-[#F5F3ED] text-sm font-medium px-6 py-3.5 rounded-xl border border-white/20 transition-all flex items-center gap-1.5"
             >
-              Create free account
+              <span>Explore workspace</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Panoramic Mountain Landscape Footer */}
-      <footer className="relative bg-[#F9F9F7] pt-12 pb-16 overflow-hidden">
+      {/* Panoramic Mountain Range Engraving Footer */}
+      <footer className="bg-[#F5F3ED] border-t border-[#DEDAD0] pt-16 pb-12">
         <div className="max-w-[1240px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12 text-xs">
-            <div className="col-span-2">
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="w-4 h-4 bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold rounded-sm">
-                  ■
-                </span>
-                <span className="font-bold text-sm tracking-tight">SYNORA</span>
-              </div>
-              <p className="text-[#666666] max-w-xs leading-relaxed">
-                The Cross-Notebook Intelligence Core & Autonomous Research Studio.
-              </p>
-              <div className="mt-4 text-[#8C8E85] font-mono text-[11px]">
-                © 2026 SYNORA Labs, Inc.
-              </div>
-            </div>
+          {/* Panoramic Mountain Artwork */}
+          <div className="relative w-full max-w-[980px] mx-auto mb-16 opacity-85 hover:opacity-100 transition-opacity duration-500">
+            <Image
+              src="/illustrations/mountain_panorama.png"
+              alt="Hand-drawn panoramic mountain range"
+              width={980}
+              height={140}
+              className="w-full h-auto object-contain filter contrast-105"
+            />
+          </div>
 
+          {/* Directory Links Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-[#DEDAD0] text-xs text-left">
             <div>
-              <div className="font-semibold text-[#1A1A1A] mb-3">Intelligence</div>
-              <ul className="space-y-2 text-[#666666]">
-                <li><a href="#platform" className="hover:text-black">Cross-Notebook Graph</a></li>
-                <li><a href="#platform" className="hover:text-black">Contradiction Detection</a></li>
-                <li><a href="#platform" className="hover:text-black">Autonomous Agent</a></li>
-                <li><Link href="/dashboard" className="hover:text-black">Workspace</Link></li>
+              <div className="font-mono text-[10px] text-[#858875] uppercase tracking-wider mb-3 font-semibold">
+                Product
+              </div>
+              <ul className="space-y-2 text-[#77756E]">
+                <li><Link href="/dashboard" className="hover:text-[#20201D]">Workspace</Link></li>
+                <li><Link href="/dashboard" className="hover:text-[#20201D]">Notebook Studio</Link></li>
+                <li><a href="#platform" className="hover:text-[#20201D]">GraphRAG</a></li>
+                <li><a href="#learning" className="hover:text-[#20201D]">Audio Overviews</a></li>
+                <li><a href="#learning" className="hover:text-[#20201D]">Recall Flashcards</a></li>
               </ul>
             </div>
 
             <div>
-              <div className="font-semibold text-[#1A1A1A] mb-3">Modes</div>
-              <ul className="space-y-2 text-[#666666]">
-                <li><a href="#features" className="hover:text-black">Critical Thinker</a></li>
-                <li><a href="#features" className="hover:text-black">Debate Perspective</a></li>
-                <li><a href="#features" className="hover:text-black">Adaptive Tutor</a></li>
-                <li><a href="#features" className="hover:text-black">Watchtower</a></li>
+              <div className="font-mono text-[10px] text-[#858875] uppercase tracking-wider mb-3 font-semibold">
+                Intelligence
+              </div>
+              <ul className="space-y-2 text-[#77756E]">
+                <li><a href="#platform" className="hover:text-[#20201D]">Deterministic Replay</a></li>
+                <li><a href="#how-it-works" className="hover:text-[#20201D]">Contradiction Engine</a></li>
+                <li><a href="#platform" className="hover:text-[#20201D]">Dynamic Evidence Maps</a></li>
+                <li><a href="#learning" className="hover:text-[#20201D]">Multiple Perspectives</a></li>
+                <li><a href="#platform" className="hover:text-[#20201D]">Research Watchtower</a></li>
               </ul>
             </div>
 
             <div>
-              <div className="font-semibold text-[#1A1A1A] mb-3">Knowledge-to-Action</div>
-              <ul className="space-y-2 text-[#666666]">
-                <li><a href="#" className="hover:text-black">Research-to-Report</a></li>
-                <li><a href="#" className="hover:text-black">Research-to-Roadmap</a></li>
-                <li><a href="#" className="hover:text-black">Evidence Maps</a></li>
-                <li><a href="#" className="hover:text-black">API Reference</a></li>
+              <div className="font-mono text-[10px] text-[#858875] uppercase tracking-wider mb-3 font-semibold">
+                Solutions
+              </div>
+              <ul className="space-y-2 text-[#77756E]">
+                <li><a href="#solutions" className="hover:text-[#20201D]">Academic Literature</a></li>
+                <li><a href="#solutions" className="hover:text-[#20201D]">Strategic Intelligence</a></li>
+                <li><a href="#solutions" className="hover:text-[#20201D]">Clinical & Pharmacology</a></li>
+                <li><a href="#solutions" className="hover:text-[#20201D]">Regulatory Compliance</a></li>
+                <li><a href="#solutions" className="hover:text-[#20201D]">Engineering Systems</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="font-mono text-[10px] text-[#858875] uppercase tracking-wider mb-3 font-semibold">
+                Resources
+              </div>
+              <ul className="space-y-2 text-[#77756E]">
+                <li><Link href="/dashboard" className="hover:text-[#20201D]">Documentation</Link></li>
+                <li><a href="https://github.com/Lokesh0652H/SYNORA" target="_blank" rel="noopener noreferrer" className="hover:text-[#20201D]">GitHub Repository ↗</a></li>
+                <li><a href="#how-it-works" className="hover:text-[#20201D]">Architecture Guide</a></li>
+                <li><Link href="/login" className="hover:text-[#20201D]">API Reference</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="font-mono text-[10px] text-[#858875] uppercase tracking-wider mb-3 font-semibold">
+                Sovereignty
+              </div>
+              <ul className="space-y-2 text-[#77756E]">
+                <li><a href="#security" className="hover:text-[#20201D]">Privacy Policy</a></li>
+                <li><a href="#security" className="hover:text-[#20201D]">Terms of Service</a></li>
+                <li><a href="#security" className="hover:text-[#20201D]">Tenant Isolation</a></li>
+                <li><a href="#security" className="hover:text-[#20201D]">Audit Trails</a></li>
               </ul>
             </div>
           </div>
-        </div>
 
-        {/* Panoramic Mountain Range Engraving along bottom */}
-        <div className="w-full relative mt-6 border-t border-dashed border-[#DCDAD4]">
-          <Image
-            src="/illustrations/mountain_panorama.png"
-            alt="Panoramic mountain engraving"
-            width={1280}
-            height={460}
-            className="w-full h-auto object-cover max-h-56 opacity-85 filter contrast-105"
-          />
+          {/* Bottom Bar: Copyright & Operational Status */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#77756E]">
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 bg-[#20201D] text-white flex items-center justify-center text-[9px] font-bold rounded-sm">
+                ■
+              </span>
+              <span>SYNORA Research Technologies © 2026. All rights reserved.</span>
+            </div>
+
+            <div className="flex items-center gap-2 font-mono text-[11px] text-[#858875]">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+              <span>DETERMINISTIC ENGINE · ALL WORKSPACES OPERATIONAL</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
