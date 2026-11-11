@@ -36,6 +36,7 @@ import SolutionsAccordion from '@/components/landing/SolutionsAccordion';
 import WorkflowPipelineFlow from '@/components/landing/WorkflowPipelineFlow';
 import KnowledgeGraphInteractive from '@/components/landing/KnowledgeGraphInteractive';
 import ShaderCard, { type ShaderTheme } from '@/components/ShaderCard';
+import Living3DEcosystem from '@/components/living-3d';
 
 type HighlightKey =
   | 'model'
@@ -71,6 +72,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F3ED] text-[#20201D] font-sans selection:bg-[#20201D] selection:text-[#FBFAF6]">
+      {/* Living 3D Interactive Object Ecosystem */}
+      <Living3DEcosystem />
+
       {/* =========================================================================
           SECTION 01: PREMIUM NAVIGATION
       ========================================================================= */}
@@ -194,7 +198,7 @@ export default function LandingPage() {
       {/* =========================================================================
           SECTION 02: CINEMATIC HERO
       ========================================================================= */}
-      <section className="relative pt-16 sm:pt-20 pb-16 sm:pb-24 overflow-hidden border-b border-[#DEDAD0]">
+      <section id="hero" className="relative pt-16 sm:pt-20 pb-16 sm:pb-24 overflow-hidden border-b border-[#DEDAD0]">
         <div className="max-w-[1240px] mx-auto px-6 text-center">
           {/* Editorial Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EFEBE2] border border-[#DEDAD0] text-[11px] font-mono tracking-widest text-[#858875] uppercase mb-6 shadow-2xs cursor-default animate-float-gentle">
