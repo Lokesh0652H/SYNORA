@@ -5,6 +5,7 @@ export interface LivingObject3DInstance {
   id: LivingObjectId;
   group: THREE.Group;
   hitBox: THREE.Mesh;
+  basePosition: THREE.Vector3;
   update: (time: number, isFocused: boolean, stage: number, mouse: { x: number; y: number }) => void;
   resetFocus: () => void;
 }
@@ -69,42 +70,43 @@ export function createMaterials() {
   };
 }
 
-export function buildKnowledgeOrb(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// Micro particle swarm accompanying each independent artifact
+function createMicroSwarm(count: number, radius: number, color: number): THREE.Points {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count * 3; i += 3) {
+    const r = radius * Math.cbrt(Math.random());
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    pos[i] = r * Math.sin(phi) * Math.cos(theta);
+    pos[i + 1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i + 2] = r * Math.cos(phi);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    color,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.75,
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// OBJECT A — KNOWLEDGE ORB
+export function buildKnowledgeOrb(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'knowledge-orb';
 
-  // Delicate scale
   const baseScale = 0.38;
   group.scale.set(baseScale, baseScale, baseScale);
 
-  // Core glass sphere
   const sphereGeo = new THREE.SphereGeometry(0.5, 32, 32);
   const sphere = new THREE.Mesh(sphereGeo, mats.champagneGlass);
   group.add(sphere);
 
-  // Inner floating particle swarm
-  const particleCount = 45;
-  const particleGeo = new THREE.BufferGeometry();
-  const particlePos = new Float32Array(particleCount * 3);
-  for (let i = 0; i < particleCount * 3; i += 3) {
-    const r = 0.32 * Math.cbrt(Math.random());
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    particlePos[i] = r * Math.sin(phi) * Math.cos(theta);
-    particlePos[i + 1] = r * Math.sin(phi) * Math.sin(theta);
-    particlePos[i + 2] = r * Math.cos(phi);
-  }
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-  const particleMat = new THREE.PointsMaterial({
-    color: 0xe8c872,
-    size: 0.035,
-    transparent: true,
-    opacity: 0.85,
-  });
-  const particles = new THREE.Points(particleGeo, particleMat);
-  group.add(particles);
+  const swarm = createMicroSwarm(40, 0.45, 0xe8c872);
+  group.add(swarm);
 
-  // Gimbal orbital rings
   const ringGeo1 = new THREE.TorusGeometry(0.72, 0.014, 16, 64);
   const ring1 = new THREE.Mesh(ringGeo1, mats.brushedGold);
   ring1.rotation.x = Math.PI / 4;
@@ -125,13 +127,14 @@ export function buildKnowledgeOrb(mats: ReturnType<typeof createMaterials>): Liv
     id: 'knowledge-orb',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage, mouse) => {
+      swarm.rotation.y += 0.015;
       if (isFocused) {
         group.rotation.y += 0.008;
         group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, mouse.y * 0.3, 0.05);
         ring1.rotation.z += 0.015;
         ring2.rotation.x += 0.012;
-        particles.rotation.y += 0.02;
         const targetScale = baseScale * (stage >= 2 ? 1.4 : 1.2);
         group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.05);
       } else {
@@ -140,7 +143,6 @@ export function buildKnowledgeOrb(mats: ReturnType<typeof createMaterials>): Liv
         group.rotation.z = Math.cos(time * 0.6) * 0.1 + mouse.x * 0.08;
         ring1.rotation.x += 0.008;
         ring2.rotation.y -= 0.006;
-        particles.rotation.y += 0.008;
         group.scale.lerp(new THREE.Vector3(baseScale, baseScale, baseScale), 0.05);
       }
     },
@@ -150,7 +152,8 @@ export function buildKnowledgeOrb(mats: ReturnType<typeof createMaterials>): Liv
   };
 }
 
-export function buildEvidencePrism(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// OBJECT B — EVIDENCE PRISM
+export function buildEvidencePrism(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'evidence-prism';
 
@@ -181,6 +184,9 @@ export function buildEvidencePrism(mats: ReturnType<typeof createMaterials>): Li
   const core = new THREE.Mesh(coreGeo, mats.brushedGold);
   group.add(core);
 
+  const swarm = createMicroSwarm(30, 0.6, 0x88c4a4);
+  group.add(swarm);
+
   const hitBoxGeo = new THREE.BoxGeometry(1.4, 1.8, 1.4);
   const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
   const hitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
@@ -191,7 +197,9 @@ export function buildEvidencePrism(mats: ReturnType<typeof createMaterials>): Li
     id: 'evidence-prism',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage) => {
+      swarm.rotation.x += 0.01;
       if (isFocused) {
         group.rotation.y += 0.005;
         const spread = stage >= 2 ? 0.3 : 0.12;
@@ -222,7 +230,8 @@ export function buildEvidencePrism(mats: ReturnType<typeof createMaterials>): Li
   };
 }
 
-export function buildResearchCompass(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// OBJECT C — RESEARCH COMPASS
+export function buildResearchCompass(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'research-compass';
 
@@ -261,6 +270,9 @@ export function buildResearchCompass(mats: ReturnType<typeof createMaterials>): 
 
   group.add(needleGroup);
 
+  const swarm = createMicroSwarm(25, 0.7, 0xdeb887);
+  group.add(swarm);
+
   const hitBoxGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.4, 16);
   const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
   const hitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
@@ -272,7 +284,9 @@ export function buildResearchCompass(mats: ReturnType<typeof createMaterials>): 
     id: 'research-compass',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage) => {
+      swarm.rotation.z += 0.01;
       if (isFocused) {
         group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, 0.2, 0.05);
         group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, 0, 0.05);
@@ -294,7 +308,8 @@ export function buildResearchCompass(mats: ReturnType<typeof createMaterials>): 
   };
 }
 
-export function buildKnowledgeFragment(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// OBJECT D — KNOWLEDGE FRAGMENT
+export function buildKnowledgeFragment(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'knowledge-fragment';
 
@@ -314,6 +329,9 @@ export function buildKnowledgeFragment(mats: ReturnType<typeof createMaterials>)
   const inner = new THREE.Mesh(innerGeo, mats.brushedGold);
   group.add(inner);
 
+  const swarm = createMicroSwarm(25, 0.65, 0xd4af37);
+  group.add(swarm);
+
   const hitBoxGeo = new THREE.SphereGeometry(1.1, 12, 12);
   const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
   const hitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
@@ -324,7 +342,9 @@ export function buildKnowledgeFragment(mats: ReturnType<typeof createMaterials>)
     id: 'knowledge-fragment',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage) => {
+      swarm.rotation.y += 0.012;
       if (isFocused) {
         group.rotation.y += 0.005;
         group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, 0.1, 0.05);
@@ -347,7 +367,8 @@ export function buildKnowledgeFragment(mats: ReturnType<typeof createMaterials>)
   };
 }
 
-export function buildTimeCapsule(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// OBJECT E — TIME CAPSULE
+export function buildTimeCapsule(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'time-capsule';
 
@@ -411,6 +432,7 @@ export function buildTimeCapsule(mats: ReturnType<typeof createMaterials>): Livi
     id: 'time-capsule',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage) => {
       if (isFocused) {
         const targetRotZ = stage >= 2 ? Math.PI : 0;
@@ -434,7 +456,8 @@ export function buildTimeCapsule(mats: ReturnType<typeof createMaterials>): Livi
   };
 }
 
-export function buildExplorerMountain(mats: ReturnType<typeof createMaterials>): LivingObject3DInstance {
+// OBJECT F — THE EXPLORER
+export function buildExplorerMountain(mats: ReturnType<typeof createMaterials>, basePos: THREE.Vector3): LivingObject3DInstance {
   const group = new THREE.Group();
   group.name = 'explorer';
 
@@ -462,6 +485,9 @@ export function buildExplorerMountain(mats: ReturnType<typeof createMaterials>):
   const sat = new THREE.Mesh(satGeo, mats.brushedGold);
   group.add(sat);
 
+  const swarm = createMicroSwarm(20, 0.7, 0x9a7b4f);
+  group.add(swarm);
+
   const hitBoxGeo = new THREE.ConeGeometry(0.9, 1.4, 8);
   const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
   const hitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
@@ -473,7 +499,9 @@ export function buildExplorerMountain(mats: ReturnType<typeof createMaterials>):
     id: 'explorer',
     group,
     hitBox,
+    basePosition: basePos,
     update: (time, isFocused, stage) => {
+      swarm.rotation.y += 0.01;
       const satAngle = time * 2;
       sat.position.x = Math.cos(satAngle) * 0.7;
       sat.position.z = Math.sin(satAngle) * 0.7;
@@ -497,49 +525,33 @@ export function buildExplorerMountain(mats: ReturnType<typeof createMaterials>):
   };
 }
 
-export function buildContinuousGoldenRibbon(scene: THREE.Scene, mats: ReturnType<typeof createMaterials>) {
-  // Graceful 3D CatmullRom spline weaving behind sections with negative Z coordinates
-  // so it never obstructs or comes in front of any content
-  const curvePoints = [
-    new THREE.Vector3(4.8, 2.5, -2.5),    // Hero right high (near mountain)
-    new THREE.Vector3(2.2, 1.2, -1.8),    // Hero mid
-    new THREE.Vector3(-4.8, -0.6, -2.8),  // Journey left gutter
-    new THREE.Vector3(-1.8, -2.6, -2.2),  // Journey center behind cards
-    new THREE.Vector3(5.2, -4.8, -2.5),   // Product Demo right gutter
-    new THREE.Vector3(1.8, -7.2, -2.0),   // Intelligence Core center behind cards
-    new THREE.Vector3(-4.8, -9.6, -2.8),  // Intelligence Core left gutter
-    new THREE.Vector3(3.2, -12.0, -2.2),  // Learning Ecosystem right gutter
-    new THREE.Vector3(-1.2, -14.4, -2.5), // Security center behind cards
-    new THREE.Vector3(4.5, -16.8, -3.0),  // Final CTA horizon
-  ];
+// Ambient stardust / knowledge particles floating in the deep background to add depth and life
+export function buildAmbientAtmosphere(scene: THREE.Scene) {
+  const particleCount = 120;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(particleCount * 3);
 
-  const curve = new THREE.CatmullRomCurve3(curvePoints);
-  const tubeGeo = new THREE.TubeGeometry(curve, 220, 0.016, 8, false);
-  const ribbonMesh = new THREE.Mesh(tubeGeo, mats.brushedGold);
-  scene.add(ribbonMesh);
-
-  // 18 delicate floating golden beads (small luxury pearls, radius 0.048)
-  const beadCount = 18;
-  const beadGeo = new THREE.SphereGeometry(0.048, 16, 16);
-  const beads: THREE.Mesh[] = [];
-
-  for (let i = 0; i < beadCount; i++) {
-    const bead = new THREE.Mesh(beadGeo, mats.brushedGold);
-    scene.add(bead);
-    beads.push(bead);
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    pos[i] = (Math.random() - 0.5) * 16;
+    pos[i + 1] = (Math.random() - 0.5) * 26 - 6; // spans top to bottom of page
+    pos[i + 2] = -3.0 - Math.random() * 3.5;     // deep in background
   }
 
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    color: 0xd4af37,
+    size: 0.025,
+    transparent: true,
+    opacity: 0.45,
+  });
+
+  const ambientPoints = new THREE.Points(geo, mat);
+  scene.add(ambientPoints);
+
   return {
-    ribbonMesh,
-    beads,
-    curve,
     update: (time: number) => {
-      for (let i = 0; i < beadCount; i++) {
-        const offset = i / beadCount;
-        const t = (time * 0.02 + offset) % 1.0;
-        const point = curve.getPointAt(t);
-        beads[i].position.copy(point);
-      }
+      ambientPoints.rotation.y = time * 0.01;
+      ambientPoints.position.y = Math.sin(time * 0.2) * 0.15;
     },
   };
 }

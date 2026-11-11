@@ -1,52 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   Play,
-  FileText,
-  Network,
-  Sparkles,
-  Layers,
-  Search,
-  Bot,
-  Brain,
-  Zap,
-  Bell,
-  Map,
-  Clock,
-  Volume2,
-  VolumeX,
-  CheckCircle2,
   Sun,
-  Send,
-  Plus,
-  Mic,
-  CornerDownLeft,
   ChevronDown,
 } from 'lucide-react';
-import AsciiSharkMotion from '@/components/AsciiSharkMotion';
 import Living3DEcosystem from '@/components/living-3d';
+import HeroMountain3D from '@/components/landing/HeroMountain3D';
+import ResearchJourneyInteractive from '@/components/landing/ResearchJourneyInteractive';
+import WorkspaceInteractiveShowcase from '@/components/landing/WorkspaceInteractiveShowcase';
+import IntelligenceEcosystemMatrix from '@/components/landing/IntelligenceEcosystemMatrix';
+import LearningEcosystemInteractiveSuite from '@/components/landing/LearningEcosystemInteractiveSuite';
 
 export default function LandingPage() {
-  const [demoPrompt, setDemoPrompt] = useState('');
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [activeQuizOption, setActiveQuizOption] = useState<number | null>(null);
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [flippedCard, setFlippedCard] = useState(false);
-  const [activeMindNode, setActiveMindNode] = useState<string>('core');
   const [lightTheme, setLightTheme] = useState(true);
-
-  // Audio simulation timer
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlayingAudio) {
-      interval = setTimeout(() => setIsPlayingAudio(false), 8000);
-    }
-    return () => clearTimeout(interval);
-  }, [isPlayingAudio]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -58,7 +28,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#F5F3ED] text-[#20201D] font-sans selection:bg-[#20201D] selection:text-[#FBFAF6] relative overflow-x-hidden">
       {/* =========================================================================
-          LIVING 3D INTERACTIVE ECOSYSTEM (In Background behind cards: z-0)
+          LIVING 3D INTERACTIVE ECOSYSTEM
+          (6 Autonomous roaming artifacts + ambient stardust in background: z-0)
       ========================================================================= */}
       <Living3DEcosystem />
 
@@ -139,7 +110,7 @@ export default function LandingPage() {
       </header>
 
       {/* =========================================================================
-          SECTION 2: CINEMATIC HERO (Exact match to split layout in image)
+          SECTION 2: CINEMATIC HERO (Living 3D Mountain Environment)
       ========================================================================= */}
       <section id="hero" className="relative pt-12 sm:pt-16 pb-20 sm:pb-28 border-b border-[#DEDAD0]/60 z-10">
         <div className="max-w-[1320px] mx-auto px-6 sm:px-10">
@@ -213,7 +184,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Sunlit Mountain & Vertical Research Nav */}
+            {/* Right Column: 3D Topographical Mountain Environment */}
             <div className="lg:col-span-6 relative flex items-center justify-center">
               {/* Vertical Research Nav (matching top right of image) */}
               <div className="absolute top-2 right-4 sm:right-8 z-20 hidden sm:flex flex-col items-start gap-3 bg-[#FBFAF6]/85 backdrop-blur-md px-3.5 py-3 rounded-xl border border-[#DEDAD0] shadow-xs text-xs font-mono text-[#5A554A]">
@@ -238,15 +209,9 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Sunlit Mountain Illustration */}
-              <div className="relative w-full max-w-[560px] aspect-[4/3] rounded-2xl overflow-hidden">
-                <Image
-                  src="/illustrations/hero_mountain_trans.png"
-                  alt="SYNORA Alpine Mountain"
-                  fill
-                  priority
-                  className="object-contain drop-shadow-md select-none pointer-events-none scale-105"
-                />
+              {/* Interactive 3D Mountain with Coordinate Pins */}
+              <div className="w-full max-w-[560px]">
+                <HeroMountain3D />
               </div>
             </div>
           </div>
@@ -254,11 +219,10 @@ export default function LandingPage() {
       </section>
 
       {/* =========================================================================
-          SECTION 3: THE RESEARCH JOURNEY (Connect, Verify, Act)
+          SECTION 3: THE RESEARCH JOURNEY (Connect, Verify, Act Interactive Canvas)
       ========================================================================= */}
       <section id="journey" className="py-20 sm:py-24 border-b border-[#DEDAD0]/60 relative z-10 bg-[#EFEBE2]/40">
         <div className="max-w-[1320px] mx-auto px-6 sm:px-10 text-center">
-          {/* Section Subtitle */}
           <div className="text-[11px] font-mono tracking-widest uppercase text-[#858875] font-semibold mb-3">
             — THE RESEARCH JOURNEY —
           </div>
@@ -267,62 +231,13 @@ export default function LandingPage() {
             From scattered papers to verifiable intelligence.
           </h2>
 
-          {/* 3 Horizontal Connected Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative items-center max-w-5xl mx-auto">
-            {/* Card 1: CONNECT */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-2xl p-6 sm:p-8 text-left shadow-xs hover:shadow-md transition-shadow relative">
-              <div className="w-12 h-12 rounded-xl bg-[#EFEBE2] border border-[#DEDAD0] flex items-center justify-center text-[#20201D] mb-5">
-                <FileText className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div className="text-xs font-mono font-bold tracking-wider text-[#20201D] uppercase">
-                CONNECT
-              </div>
-              <p className="text-sm text-[#6E6A61] mt-2 leading-relaxed">
-                Bring research sources together in one place.
-              </p>
-            </div>
-
-            {/* Arrow connector 1 */}
-            <div className="hidden md:flex justify-center text-[#8A877D] text-lg font-mono">
-              →
-            </div>
-
-            {/* Card 2: VERIFY */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-2xl p-6 sm:p-8 text-left shadow-xs hover:shadow-md transition-shadow relative">
-              <div className="w-12 h-12 rounded-xl bg-[#EFEBE2] border border-[#DEDAD0] flex items-center justify-center text-[#20201D] mb-5">
-                <Network className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div className="text-xs font-mono font-bold tracking-wider text-[#20201D] uppercase">
-                VERIFY
-              </div>
-              <p className="text-sm text-[#6E6A61] mt-2 leading-relaxed">
-                Understand claims and evaluate evidence.
-              </p>
-            </div>
-
-            {/* Arrow connector 2 */}
-            <div className="hidden md:flex justify-center text-[#8A877D] text-lg font-mono">
-              →
-            </div>
-
-            {/* Card 3: ACT */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-2xl p-6 sm:p-8 text-left shadow-xs hover:shadow-md transition-shadow relative">
-              <div className="w-12 h-12 rounded-xl bg-[#EFEBE2] border border-[#DEDAD0] flex items-center justify-center text-[#20201D] mb-5">
-                <Sparkles className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div className="text-xs font-mono font-bold tracking-wider text-[#20201D] uppercase">
-                ACT
-              </div>
-              <p className="text-sm text-[#6E6A61] mt-2 leading-relaxed">
-                Turn knowledge into meaningful outcomes.
-              </p>
-            </div>
-          </div>
+          {/* Interactive Visual Stage + 3 Connected Cards */}
+          <ResearchJourneyInteractive />
         </div>
       </section>
 
       {/* =========================================================================
-          SECTION 4: PRODUCT DEMO (Living Workspace Showcase)
+          SECTION 4: PRODUCT DEMO (Interactive Workspace Demonstration)
       ========================================================================= */}
       <section id="product-demo" className="py-20 sm:py-28 border-b border-[#DEDAD0]/60 relative z-10 bg-[#FBFAF6]">
         <div className="max-w-[1320px] mx-auto px-6 sm:px-10">
@@ -369,138 +284,16 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Full Dashboard Card with ASCII Fish Simulation */}
+            {/* Right Column: 3D Tilt Workspace Showcase with ASCII Fish */}
             <div className="lg:col-span-7">
-              <div className="rounded-2xl border border-[#DEDAD0] bg-[#FAF8F5] shadow-xl overflow-hidden relative">
-                {/* Top Window Bar */}
-                <div className="h-10 bg-[#EFEBE2] border-b border-[#DEDAD0] px-4 flex items-center justify-between text-xs text-[#55534E]">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3.5 h-3.5 rounded bg-[#20201D] text-[8px] text-white flex items-center justify-center font-bold">
-                      ■
-                    </div>
-                    <span className="font-serif font-bold text-xs text-[#20201D]">SYNORA</span>
-                    <span className="opacity-40">/</span>
-                    <span className="font-mono text-[11px] text-[#77756E]">Workspace</span>
-                    <span className="opacity-40">/</span>
-                    <span className="font-mono text-[11px] text-[#20201D] font-medium">Dashboard</span>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-[11px] font-mono">
-                    <span className="inline-flex items-center gap-1.5 text-[#2D5A43]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>DETERMINISTIC RETRIEVAL</span>
-                    </span>
-                    <span className="text-[#8A877D] hidden sm:inline">All Workspaces</span>
-                  </div>
-                </div>
-
-                {/* Dashboard Inner Body */}
-                <div className="grid grid-cols-12 min-h-[380px]">
-                  {/* Mini Sidebar */}
-                  <div className="hidden sm:block sm:col-span-3 border-r border-[#E5E0D5] p-3 text-[11px] space-y-4 bg-[#F5F2EA]/60">
-                    <div>
-                      <div className="font-mono text-[9px] uppercase tracking-wider text-[#8A877D] px-2 mb-1">
-                        WORKSPACE
-                      </div>
-                      <div className="space-y-0.5">
-                        <div className="px-2 py-1.5 rounded bg-[#20201D] text-[#FBFAF6] font-medium">
-                          Overview
-                        </div>
-                        <div className="px-2 py-1.5 rounded text-[#55534E] hover:bg-[#EAE6DC]">
-                          All notebooks
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="font-mono text-[9px] uppercase tracking-wider text-[#8A877D] px-2 mb-1">
-                        NOTEBOOKS (2)
-                      </div>
-                      <div className="space-y-0.5">
-                        <div className="px-2 py-1 rounded text-[#55534E] hover:bg-[#EAE6DC] truncate">
-                          Notebook: Research
-                        </div>
-                        <div className="px-2 py-1 rounded text-[#55534E] hover:bg-[#EAE6DC] truncate font-medium">
-                          ML
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-8 text-[10px] text-[#8A877D] px-2">
-                      <div className="flex items-center gap-1.5 text-[#20201D] font-medium">
-                        <span className="w-4 h-4 rounded-full bg-[#20201D] text-white flex items-center justify-center text-[9px]">
-                          N
-                        </span>
-                        <span>Research Studio</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Main Workspace Area with Creature Simulation */}
-                  <div className="col-span-12 sm:col-span-9 p-6 relative flex flex-col justify-between bg-[#FAF8F5]">
-                    {/* Top Controls */}
-                    <div className="flex items-center justify-between text-xs mb-4">
-                      <div className="px-2.5 py-1 rounded-full bg-[#EFEBE2] border border-[#DEDAD0] text-[11px] font-mono text-[#5A554A]">
-                        History ⌵
-                      </div>
-                      <Link
-                        href="/dashboard"
-                        className="px-3 py-1 rounded-full bg-[#20201D] text-[#FBFAF6] text-[11px] font-mono hover:bg-black transition-colors"
-                      >
-                        + New notebook
-                      </Link>
-                    </div>
-
-                    {/* Central Creature & Title */}
-                    <div className="relative my-6 text-center">
-                      {/* ASCII Creature Simulation */}
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-85">
-                        <AsciiSharkMotion />
-                      </div>
-
-                      <div className="relative z-10 py-6">
-                        <h3 className="font-serif text-3xl sm:text-4xl text-[#20201D] font-normal tracking-tight">
-                          what’s on your mind?
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Floating Prompt Bar */}
-                    <div className="mt-4 bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-2.5 shadow-md flex items-center gap-3">
-                      <span className="text-[#8A877D] hover:text-[#20201D] cursor-pointer">
-                        <Plus className="w-4 h-4" />
-                      </span>
-                      <span className="text-[#8A877D] hover:text-[#20201D] cursor-pointer">
-                        <Mic className="w-4 h-4" />
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="Ask Synora anything..."
-                        value={demoPrompt}
-                        onChange={(e) => setDemoPrompt(e.target.value)}
-                        className="flex-1 bg-transparent text-xs text-[#20201D] placeholder-[#A09D94] outline-none"
-                      />
-                      <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-[#8A877D]">
-                        <span>↵ send</span>
-                        <span>⇧↵ newline</span>
-                      </div>
-                      <Link
-                        href="/dashboard"
-                        className="w-7 h-7 rounded-lg bg-[#20201D] text-white flex items-center justify-center hover:bg-black transition-colors"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <WorkspaceInteractiveShowcase />
             </div>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          SECTION 5: INTELLIGENCE CORE (Exact 6x2 grid of cards from image)
+          SECTION 5: INTELLIGENCE CORE (Asymmetrical Ecosystem Matrix)
       ========================================================================= */}
       <section id="intelligence-core" className="py-20 sm:py-28 border-b border-[#DEDAD0]/60 relative z-10 bg-[#EFEBE2]/30">
         <div className="max-w-[1320px] mx-auto px-6 sm:px-10 text-center">
@@ -512,170 +305,13 @@ export default function LandingPage() {
             An entire research ecosystem. One intelligence layer.
           </h2>
 
-          {/* 6-Column Grid x 2 Rows */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 max-w-[1280px] mx-auto text-left">
-            {/* Card 1: Cross-Notebook Intelligence */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <FileText className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Cross-Notebook Intelligence
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Connect ideas across notebooks.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: Dynamic Knowledge Graph */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Network className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Dynamic Knowledge Graph
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Discover relationships.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: Evidence Detection */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <CheckCircle2 className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Evidence Detection
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Find contradictions.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 4: Deterministic Retrieval */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Search className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Deterministic Retrieval
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Get reliable results.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 5: Autonomous Research Agent */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Bot className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Autonomous Research Agent
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Automate deep research.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 6: Multiple Perspectives */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Layers className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Multiple Perspectives
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Explore from different angles.
-                </p>
-              </div>
-            </div>
-
-            {/* Row 2 - Card 7: Adaptive Learning */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Brain className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Adaptive Learning
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Turn research into personalized learning.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 8: Knowledge-to-Action */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Zap className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Knowledge-to-Action
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Convert insights into real action.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 9: Research Watchtower */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Bell className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Research Watchtower
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Stay updated.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 10: Interactive Maps */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Map className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Interactive Maps
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Visualize connections.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 11: Research Evolution */}
-            <div className="bg-[#FBFAF6] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-sm hover:border-[#20201D] transition-all group">
-              <div>
-                <Clock className="w-5 h-5 text-[#858875] mb-3 stroke-[1.5]" />
-                <h4 className="font-medium text-xs text-[#20201D] leading-snug">
-                  Research Evolution
-                </h4>
-                <p className="text-[11px] text-[#77756E] mt-1 leading-normal">
-                  Track your learning.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 12: Architectural Arches "And much more... →" */}
-            <div className="bg-[#ECE7DC] border border-[#DEDAD0] rounded-xl p-4 flex flex-col justify-between shadow-2xs relative overflow-hidden group cursor-pointer hover:border-[#20201D] transition-all">
-              {/* Architectural Arched Colonnade illustration / styling */}
-              <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#D5CBB8_1px,transparent_1px)] [background-size:12px_12px]" />
-              <div className="absolute right-0 top-0 w-28 h-28 border-l border-b border-[#C8BDAB] rounded-bl-full opacity-60" />
-              <div className="absolute right-2 top-2 w-20 h-20 border-l border-b border-[#C8BDAB] rounded-bl-full opacity-40" />
-
-              <div className="relative z-10 pt-8" />
-              <div className="relative z-10 pt-4 flex items-center justify-between text-xs font-medium text-[#20201D]">
-                <span>And much more...</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </div>
-            </div>
-          </div>
+          {/* Asymmetric Ecosystem Matrix with Dual Flagships & Surrounding Modules */}
+          <IntelligenceEcosystemMatrix />
         </div>
       </section>
 
       {/* =========================================================================
-          SECTION 6: LEARNING ECOSYSTEM (Audio, Flashcards, Mind Map, Quizzes)
+          SECTION 6: LEARNING ECOSYSTEM (Dedicated Living Widgets)
       ========================================================================= */}
       <section id="learning-ecosystem" className="py-20 sm:py-28 border-b border-[#DEDAD0]/60 relative z-10 bg-[#FBFAF6]">
         <div className="max-w-[1320px] mx-auto px-6 sm:px-10">
@@ -705,135 +341,21 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: 4 Interactive Learning Cards */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Card 1: Audio Overviews */}
-              <div className="bg-[#FAF8F5] border border-[#DEDAD0] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-                <div className="text-xs font-mono text-[#8A877D] uppercase mb-4">
-                  Audio Overviews
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                    className="w-10 h-10 rounded-full bg-[#20201D] text-white flex items-center justify-center hover:bg-black transition-colors cursor-pointer shrink-0 shadow-sm"
-                    aria-label="Play audio briefing"
-                  >
-                    <Play className={`w-3.5 h-3.5 ml-0.5 ${isPlayingAudio ? 'fill-white animate-pulse' : 'fill-white'}`} />
-                  </button>
-                  {/* Waveform Visualization */}
-                  <div className="flex-1 flex items-center gap-0.5 h-8">
-                    {[12, 24, 18, 28, 14, 32, 20, 26, 16, 22, 30, 15, 25, 19, 27, 14, 21].map((h, i) => (
-                      <span
-                        key={i}
-                        className={`w-1 rounded-full transition-all duration-300 ${
-                          isPlayingAudio ? 'bg-[#20201D]' : 'bg-[#D5D0C5]'
-                        }`}
-                        style={{ height: `${isPlayingAudio ? (h * 1.2) % 32 + 6 : h * 0.7}px` }}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-mono text-xs text-[#77756E]">12:36</span>
-                </div>
-              </div>
-
-              {/* Card 2: Flashcards */}
-              <div
-                onClick={() => setFlippedCard(!flippedCard)}
-                className="bg-[#FAF8F5] border border-[#DEDAD0] rounded-2xl p-5 shadow-xs flex flex-col justify-between cursor-pointer hover:border-[#20201D] transition-all"
-              >
-                <div className="flex justify-between items-center text-xs font-mono text-[#8A877D] uppercase mb-3">
-                  <span>Flashcards</span>
-                  <span className="text-[10px] text-[#A09D94]">Click to flip</span>
-                </div>
-                <div className="flex items-center justify-center gap-3 py-2">
-                  <div className={`w-14 h-16 rounded-xl border flex items-center justify-center font-serif text-lg font-bold transition-all shadow-xs ${
-                    !flippedCard ? 'bg-white border-[#20201D] text-[#20201D]' : 'bg-[#EFEBE2] border-[#DEDAD0] text-[#8A877D]'
-                  }`}>
-                    Q
-                  </div>
-                  <div className={`w-14 h-16 rounded-xl border flex items-center justify-center font-serif text-lg font-bold transition-all shadow-xs ${
-                    flippedCard ? 'bg-[#20201D] border-[#20201D] text-white' : 'bg-white border-[#DEDAD0] text-[#20201D]'
-                  }`}>
-                    A
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: Mind Map */}
-              <div className="bg-[#FAF8F5] border border-[#DEDAD0] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-                <div className="text-xs font-mono text-[#8A877D] uppercase mb-2">
-                  Mind Map
-                </div>
-                <div className="relative h-20 flex items-center justify-center">
-                  {/* Central Node */}
-                  <div className="w-7 h-7 rounded-full bg-[#20201D] text-white flex items-center justify-center font-mono text-[9px] shadow-sm z-10">
-                    ⌘
-                  </div>
-                  {/* Surrounding Nodes */}
-                  <div className="absolute top-1 left-8 w-5 h-5 rounded-full bg-[#EAE6DC] border border-[#DEDAD0] flex items-center justify-center text-[8px] font-mono">
-                    α
-                  </div>
-                  <div className="absolute top-1 right-8 w-5 h-5 rounded-full bg-[#EAE6DC] border border-[#DEDAD0] flex items-center justify-center text-[8px] font-mono">
-                    β
-                  </div>
-                  <div className="absolute bottom-1 left-8 w-5 h-5 rounded-full bg-[#EAE6DC] border border-[#DEDAD0] flex items-center justify-center text-[8px] font-mono">
-                    γ
-                  </div>
-                  <div className="absolute bottom-1 right-8 w-5 h-5 rounded-full bg-[#EAE6DC] border border-[#DEDAD0] flex items-center justify-center text-[8px] font-mono">
-                    δ
-                  </div>
-                  {/* Connecting Cross Lines */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-24 h-px bg-[#D5D0C5]" />
-                    <div className="h-16 w-px bg-[#D5D0C5] absolute" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 4: Quizzes */}
-              <div className="bg-[#FAF8F5] border border-[#DEDAD0] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-                <div className="text-xs font-mono text-[#8A877D] uppercase mb-1">
-                  Quizzes
-                </div>
-                <div className="text-xs font-medium text-[#20201D] mb-2 truncate">
-                  What is...
-                </div>
-                <div className="space-y-1.5 text-xs text-[#55534E]">
-                  {[
-                    { id: 0, label: 'A', text: 'Option A' },
-                    { id: 1, label: 'B', text: 'Option B' },
-                    { id: 2, label: 'C', text: 'Option C' },
-                  ].map((opt) => (
-                    <div
-                      key={opt.id}
-                      onClick={() => setActiveQuizOption(opt.id)}
-                      className="flex items-center gap-2 cursor-pointer hover:text-[#20201D]"
-                    >
-                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center text-[9px] ${
-                        activeQuizOption === opt.id
-                          ? 'border-[#20201D] bg-[#20201D] text-white'
-                          : 'border-[#A09D94]'
-                      }`}>
-                        {activeQuizOption === opt.id && '✓'}
-                      </span>
-                      <span>{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Right Column: 4 Fully Interactive Learning Widgets */}
+            <div className="lg:col-span-7">
+              <LearningEcosystemInteractiveSuite />
             </div>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          SECTION 7: DARK CTA BANNER (Planetary Eclipse Horizon)
+          SECTION 7: DARK CTA BANNER (Planetary Horizon Arc)
       ========================================================================= */}
       <section className="py-20 sm:py-24 relative z-10 px-6 sm:px-10">
         <div className="max-w-[1320px] mx-auto rounded-3xl bg-[#141412] text-[#FBFAF6] p-10 sm:p-16 relative overflow-hidden text-center shadow-2xl">
-          {/* Glowing Planetary Horizon Arc */}
+          {/* Luminous Celestial Eclipse Arc */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* Luminous Eclipse Arc */}
             <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] sm:w-[1100px] h-[400px] rounded-[100%] border-t border-[#D4AF37]/50 shadow-[0_-20px_100px_rgba(212,175,55,0.25)]" />
             <div className="absolute -top-36 left-1/2 -translate-x-1/2 w-[700px] sm:w-[950px] h-[350px] rounded-[100%] bg-gradient-to-b from-[#D4AF37]/15 to-transparent blur-2xl" />
           </div>
@@ -857,7 +379,7 @@ export default function LandingPage() {
 
               <button
                 onClick={() => scrollToSection('hero')}
-                className="px-6 py-3 rounded-full bg-transparent hover:bg-white/10 text-[#FBFAF6] border border-[#44423C] text-sm font-medium transition-all"
+                className="px-6 py-3 rounded-full bg-transparent hover:bg-white/10 text-[#FBFAF6] border border-[#44423C] text-sm font-medium transition-all cursor-pointer"
               >
                 Explore SYNORA
               </button>

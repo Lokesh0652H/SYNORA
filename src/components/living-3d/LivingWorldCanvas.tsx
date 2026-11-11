@@ -11,20 +11,20 @@ import {
   buildKnowledgeFragment,
   buildTimeCapsule,
   buildExplorerMountain,
-  buildContinuousGoldenRibbon,
+  buildAmbientAtmosphere,
   LivingObject3DInstance,
 } from './builder';
 import { LivingObjectId } from './types';
 
-// Spatial anchors placed in the open margins and deep in Z (-2.0)
-// so they stay behind cards, text, and interactive elements
+// Spatial anchors distributed throughout the landing page sections
+// placed in open gutters and negative Z (-2.0) so they move in background behind cards
 const OBJECT_BASE_POSITIONS: Record<LivingObjectId, THREE.Vector3> = {
-  'knowledge-orb': new THREE.Vector3(4.5, 2.2, -2.0),      // Hero right margin
-  'research-compass': new THREE.Vector3(-4.8, -1.8, -2.2),  // Research Journey left margin
-  'knowledge-fragment': new THREE.Vector3(5.0, -5.2, -2.0), // Product Demo right margin
-  'evidence-prism': new THREE.Vector3(-5.0, -8.6, -2.2),    // Intelligence Core left margin
-  'time-capsule': new THREE.Vector3(4.8, -12.2, -2.0),      // Learning Ecosystem right margin
-  'explorer': new THREE.Vector3(-4.6, -15.4, -2.2),         // Security & Solutions left margin
+  'knowledge-orb': new THREE.Vector3(4.2, 2.0, -2.0),       // Hero section right (near mountain)
+  'research-compass': new THREE.Vector3(-4.6, -1.8, -2.2),  // Research Journey left
+  'knowledge-fragment': new THREE.Vector3(4.8, -5.2, -2.0), // Product Demo right
+  'evidence-prism': new THREE.Vector3(-4.8, -8.6, -2.2),    // Intelligence Core left
+  'time-capsule': new THREE.Vector3(4.6, -12.2, -2.0),      // Learning Ecosystem right
+  'explorer': new THREE.Vector3(-4.4, -15.4, -2.2),         // Security / CTA left
 };
 
 export default function LivingWorldCanvas() {
@@ -61,11 +61,11 @@ export default function LivingWorldCanvas() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.15;
 
     container.appendChild(renderer.domElement);
 
-    // 2. Studio Lighting
+    // 2. Soft Studio Lighting
     const ambientLight = new THREE.AmbientLight(0xfff8ee, 1.4);
     scene.add(ambientLight);
 
@@ -80,25 +80,25 @@ export default function LivingWorldCanvas() {
     // 3. Materials & Procedural Object Construction
     const mats = createMaterials();
 
+    // 6 Independent, Unconnected 3D Objects
     const objects: LivingObject3DInstance[] = [
-      buildKnowledgeOrb(mats),
-      buildEvidencePrism(mats),
-      buildResearchCompass(mats),
-      buildKnowledgeFragment(mats),
-      buildTimeCapsule(mats),
-      buildExplorerMountain(mats),
+      buildKnowledgeOrb(mats, OBJECT_BASE_POSITIONS['knowledge-orb']),
+      buildEvidencePrism(mats, OBJECT_BASE_POSITIONS['evidence-prism']),
+      buildResearchCompass(mats, OBJECT_BASE_POSITIONS['research-compass']),
+      buildKnowledgeFragment(mats, OBJECT_BASE_POSITIONS['knowledge-fragment']),
+      buildTimeCapsule(mats, OBJECT_BASE_POSITIONS['time-capsule']),
+      buildExplorerMountain(mats, OBJECT_BASE_POSITIONS['explorer']),
     ];
 
     const hitBoxes: THREE.Mesh[] = [];
     objects.forEach((obj) => {
-      const base = OBJECT_BASE_POSITIONS[obj.id];
-      obj.group.position.copy(base);
+      obj.group.position.copy(obj.basePosition);
       scene.add(obj.group);
       hitBoxes.push(obj.hitBox);
     });
 
-    // 4. Continuous Golden Ribbon & Floating Beads (in background behind content)
-    const ribbon = buildContinuousGoldenRibbon(scene, mats);
+    // 4. Subtle Deep-Background Ambient Particle Dust (no connecting ribbons!)
+    const atmosphere = buildAmbientAtmosphere(scene);
 
     // 5. Scroll and Mouse Tracking
     let targetCameraY = 2.0;
@@ -114,7 +114,7 @@ export default function LivingWorldCanvas() {
       ) - window.innerHeight;
       const scrollRatio = docHeight > 0 ? Math.min(scrollY / docHeight, 1) : 0;
 
-      // Map scroll down 18 world units to seamlessly track with landing page sections
+      // Camera smoothly tracks down 18 units along page height
       targetCameraY = 2.0 - scrollRatio * 18.5;
     };
 
@@ -168,7 +168,7 @@ export default function LivingWorldCanvas() {
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('resize', handleResize);
 
-    // 6. Animation Loop
+    // 6. Animation Loop: Autonomous, Independent Kinematics for Each Object
     let animationFrameId: number;
     const clock = new THREE.Clock();
 
@@ -176,25 +176,26 @@ export default function LivingWorldCanvas() {
       animationFrameId = requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Smooth camera interpolation towards scroll target
+      // Camera lerp
       camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetCameraY, 0.08);
 
       if (!prefersReducedMotion) {
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, mouse.x * 0.25, 0.05);
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, mouse.x * 0.2, 0.05);
       }
 
-      // Update golden ribbon beads
-      ribbon.update(time);
+      // Update ambient background dust
+      atmosphere.update(time);
 
       const currentActive = activeObjRef.current;
       const stage = currentStageRef.current;
 
+      // Move each object independently with unique roaming parameters
       objects.forEach((obj, idx) => {
         const isFocused = currentActive === obj.id;
-        const base = OBJECT_BASE_POSITIONS[obj.id];
+        const base = obj.basePosition;
 
         if (isFocused) {
-          // Position beside the open experience panel, slightly forward
+          // Focus position: beside the open experience panel, slightly forward
           const isMobile = window.innerWidth < 768;
           const targetX = isMobile ? 0 : -2.2;
           const targetY = camera.position.y + (isMobile ? 1.0 : 0);
@@ -202,23 +203,27 @@ export default function LivingWorldCanvas() {
 
           obj.group.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.08);
         } else {
-          // Ambient roaming movement around base anchor in background
+          // Independent autonomous roaming: each object has unique speeds, phase offsets, and orbital radii
           if (!prefersReducedMotion) {
-            const roamSpeedX = 0.4 + (idx % 3) * 0.12;
-            const roamSpeedY = 0.6 + (idx % 2) * 0.15;
-            const roamAmpX = 0.25;
-            const roamAmpY = 0.2;
+            const freqX = 0.35 + (idx * 0.11);
+            const freqY = 0.5 + (idx * 0.13);
+            const freqZ = 0.25 + (idx * 0.08);
+            const ampX = 0.45;
+            const ampY = 0.35;
+            const ampZ = 0.2;
 
-            const targetX = base.x + Math.sin(time * roamSpeedX + idx) * roamAmpX;
-            const targetY = base.y + Math.cos(time * roamSpeedY + idx) * roamAmpY;
-            const targetZ = base.z + Math.sin(time * 0.3 + idx) * 0.1;
+            // Autonomous 3D Lissajous wandering around its home zone
+            const targetX = base.x + Math.sin(time * freqX + idx * 1.5) * ampX;
+            const targetY = base.y + Math.cos(time * freqY + idx * 2.1) * ampY;
+            const targetZ = base.z + Math.sin(time * freqZ + idx * 0.9) * ampZ;
 
-            obj.group.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.06);
+            obj.group.position.lerp(new THREE.Vector3(targetX, targetY, targetZ), 0.05);
           } else {
             obj.group.position.copy(base);
           }
         }
 
+        // Update object's internal geometry & micro-particles
         obj.update(time, isFocused, stage, mouse);
       });
 
