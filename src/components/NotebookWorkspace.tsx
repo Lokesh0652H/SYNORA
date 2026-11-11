@@ -15,11 +15,17 @@ import {
   Sparkles,
   WandSparkles,
   X,
+  Globe,
+  Video,
+  Download,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AsciiSharkMotion from '@/components/AsciiSharkMotion';
 import ThinkingPill from '@/components/ThinkingPill';
 import { readNotebooks } from '@/lib/data';
+import { exportNotebookToPdf, exportNotebookToDocx, exportNotebookToMarkdown } from '@/lib/export';
 
 type Source = {
   id: string;
@@ -57,9 +63,79 @@ export default function NotebookWorkspace() {
   const [notice, setNotice] = useState('');
   const [activeCitation, setActiveCitation] = useState<Citation | null>(null);
 
+  // URL & YouTube ingestion state
+  const [showUrlModal, setShowUrlModal] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlBusy, setUrlBusy] = useState(false);
+
+  // Export dropdown state
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const initialQueryProcessed = useRef(false);
+
+  async function handleIngestUrl() {
+    if (!urlInput.trim()) return;
+    setError('');
+    setUrlBusy(true);
+    setNotice('Extracting web content or YouTube transcript and generating vector embeddings...');
+
+    try {
+      const res = await fetch('/api/sources/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notebookId: id, url: urlInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to ingest URL');
+
+      setNotice(`${data.title} successfully indexed (${data.chunkCount} vector chunks).`);
+      setSources((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          title: data.title,
+          kind: data.type === 'youtube' ? 'youtube' : 'web',
+          status: 'ready',
+        },
+      ]);
+      setUrlInput('');
+      setShowUrlModal(false);
+      setUploadProgressState('done');
+      setTimeout(() => setUploadProgressState('idle'), 3000);
+    } catch (err: any) {
+      setError(err.message || 'URL ingestion failed.');
+    } finally {
+      setUrlBusy(false);
+    }
+  }
+
+  async function handleExport(format: 'pdf' | 'docx' | 'md') {
+    setShowExportMenu(false);
+    setExporting(true);
+    const exportData = {
+      title,
+      sources: sources.map((s) => ({ title: s.title, type: s.kind })),
+      messages: messages.map((m) => ({ role: m.role, content: m.content, citations: m.citations })),
+      notes: [],
+    };
+
+    try {
+      if (format === 'pdf') {
+        exportNotebookToPdf(exportData);
+      } else if (format === 'docx') {
+        await exportNotebookToDocx(exportData);
+      } else if (format === 'md') {
+        exportNotebookToMarkdown(exportData);
+      }
+    } catch (e: any) {
+      setError(`Export failed: ${e.message}`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const refresh = useCallback(async () => {
     try {
@@ -213,6 +289,57 @@ export default function NotebookWorkspace() {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Export Dropdown Menu */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={exporting}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[#1E201D] transition-colors cursor-pointer"
+                >
+                  <Download size={13} />
+                  <span>{exporting ? 'Exporting...' : 'Export'}</span>
+                </button>
+
+                {showExportMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-[#EAE8E2] py-1.5 z-50 text-xs animate-scale-in">
+                    <div className="px-3 py-1 text-[10px] font-mono text-[#8C8E85] uppercase tracking-wider">
+                      Export Notebook
+                    </div>
+                    <button
+                      onClick={() => handleExport('pdf')}
+                      className="w-full text-left px-3 py-2 hover:bg-[#F7F7F4] flex items-center gap-2.5 text-[#1E201D] transition-colors cursor-pointer"
+                    >
+                      <FileDown size={14} className="text-[#8C8E85]" />
+                      <div>
+                        <div className="font-medium">Research Dossier (PDF)</div>
+                        <div className="text-[10px] text-[#8C8E85]">Executive summary & citations</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleExport('docx')}
+                      className="w-full text-left px-3 py-2 hover:bg-[#F7F7F4] flex items-center gap-2.5 text-[#1E201D] transition-colors cursor-pointer"
+                    >
+                      <FileText size={14} className="text-[#8C8E85]" />
+                      <div>
+                        <div className="font-medium">Word Document (.docx)</div>
+                        <div className="text-[10px] text-[#8C8E85]">Formatted publication dossier</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleExport('md')}
+                      className="w-full text-left px-3 py-2 hover:bg-[#F7F7F4] flex items-center gap-2.5 text-[#1E201D] transition-colors cursor-pointer"
+                    >
+                      <Globe size={14} className="text-[#8C8E85]" />
+                      <div>
+                        <div className="font-medium">Markdown (.md)</div>
+                        <div className="text-[10px] text-[#8C8E85]">With YAML metadata headers</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <Link
                 href={`/notebook/${id}/studio`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[#1E201D] transition-colors"
@@ -481,6 +608,24 @@ export default function NotebookWorkspace() {
               <div className="text-[10px] text-[#8C8E85] mt-0.5">PDF, DOCX, TXT, or MD</div>
             </div>
 
+            {/* Add Web URL / YouTube Video button */}
+            <button
+              type="button"
+              onClick={() => setShowUrlModal(true)}
+              className="mt-2.5 w-full border border-[#DCDAD4] hover:border-[#1E201D] bg-white/70 hover:bg-white rounded-xl p-3 text-left flex items-center justify-between text-xs text-[#1E201D] transition-all group shadow-2xs cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#EFECE6] group-hover:bg-[#E2DFD7] flex items-center justify-center text-[#1E201D] transition-colors">
+                  <Globe size={14} />
+                </div>
+                <div>
+                  <div className="font-medium text-xs">Add Web URL or YouTube</div>
+                  <div className="text-[10px] text-[#8C8E85]">Article scraper & timed transcripts</div>
+                </div>
+              </div>
+              <Plus size={14} className="text-[#8C8E85] group-hover:text-[#1E201D] transition-colors" />
+            </button>
+
             <input
               ref={fileRef}
               type="file"
@@ -582,6 +727,105 @@ export default function NotebookWorkspace() {
             </Link>
           </div>
         </aside>
+
+        {/* Web URL / YouTube Ingestion Modal */}
+        {showUrlModal && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+            onClick={() => {
+              if (!urlBusy) {
+                setShowUrlModal(false);
+                setUrlInput('');
+              }
+            }}
+          >
+            <div
+              className="bg-[#FBFAF6] rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#DEDAD0] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DC]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#EFEBE2] border border-[#DEDAD0] flex items-center justify-center text-[#20201D]">
+                    <Globe size={16} />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-base text-[#1E201D] font-medium">Add Web or YouTube Source</h4>
+                    <p className="text-[11px] text-[#7A7C75]">Scrape web articles or extract timed video transcripts</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={urlBusy}
+                  onClick={() => {
+                    setShowUrlModal(false);
+                    setUrlInput('');
+                  }}
+                  className="w-7 h-7 rounded-full hover:bg-[#EFEBE2] flex items-center justify-center text-[#777] cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void handleIngestUrl();
+                }}
+                className="mt-4 space-y-4"
+              >
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A877D] block mb-1.5">
+                    Source URL
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://example.com/article or https://youtube.com/watch?v=..."
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    disabled={urlBusy}
+                    className="w-full px-3 py-2.5 bg-white border border-[#DEDAD0] rounded-xl text-xs text-[#1E201D] placeholder-[#A0A29A] outline-none focus:border-[#20201D] transition-colors"
+                  />
+                </div>
+
+                <div className="text-[11px] text-[#66635B] bg-[#F5F2EA] p-3 rounded-xl border border-[#E5E0D5] leading-relaxed">
+                  💡 <strong>Multi-Modal Ingestion:</strong> SYNORA automatically detects YouTube videos, extracts clean spoken transcript segments, and chunks web articles for instant citation-grounded research.
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE6DC]">
+                  <button
+                    type="button"
+                    disabled={urlBusy}
+                    onClick={() => {
+                      setShowUrlModal(false);
+                      setUrlInput('');
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs text-[#60635C] hover:bg-[#EFEBE2] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={urlBusy || !urlInput.trim()}
+                    className="px-4 py-1.5 rounded-lg text-xs font-medium bg-[#20201D] text-white hover:bg-black disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    {urlBusy ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" />
+                        <span>Ingesting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={13} />
+                        <span>Ingest Source</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Citation Popover Modal */}
         {activeCitation && (
