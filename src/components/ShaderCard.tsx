@@ -209,10 +209,10 @@ export default function ShaderCard({
         <div className="flex items-center justify-between mb-5">
           {icon && (
             <div
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-108 group-hover:-rotate-3 ${
                 hovered
                   ? 'bg-white/20 text-white shadow-inner backdrop-blur-md'
-                  : 'text-current'
+                  : 'text-current shadow-2xs'
               }`}
               style={{
                 backgroundColor: hovered ? undefined : themeConfig.iconBg,

@@ -49,7 +49,7 @@ body {
 @keyframes scaleIn {
   0% {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
   100% {
     opacity: 1;
@@ -58,7 +58,35 @@ body {
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Subtle float animation for hero illustrations & cards */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+/* Gentle tilt float for interactive badges */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(0.4deg);
+  }
+}
+
+.animate-float-gentle {
+  animation: floatGentle 4.5s ease-in-out infinite;
 }
 
 /* Subtle pulse for pending states */
@@ -73,6 +101,46 @@ body {
 
 .animate-soft-pulse {
   animation: softPulse 1.8s ease-in-out infinite;
+}
+
+/* Shimmer highlight for pill badges and active buttons */
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmerWave 2.8s infinite;
+}
+
+/* Luminous breathing ring for focused prompt bar */
+@keyframes luminousGlow {
+  0%, 100% {
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+  }
+  50% {
+    box-shadow: 0 20px 48px -12px rgba(0,0,0,0.12), 0 0 0 1.5px rgba(0,0,0,0.12);
+  }
+}
+
+.glow-active {
+  animation: luminousGlow 3s ease-in-out infinite;
+}
+
+/* Interactive Card Lift Utility */
+.hover-lift {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -8px rgba(0,0,0,0.08);
 }
 
 /* Custom subtle scrollbars */

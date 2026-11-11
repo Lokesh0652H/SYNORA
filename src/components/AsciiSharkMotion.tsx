@@ -29,6 +29,7 @@ interface Bubble {
 }
 
 interface Creature {
+  id: string;
   type: 'hammerhead' | 'great_white' | 'pilot_fish';
   x: number;
   y: number;
@@ -57,6 +58,25 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
     let width = 0;
     let height = 0;
 
+    // Track cursor for subtle aquatic responsiveness
+    const mouse = { x: -2000, y: -2000, active: false };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.active = false;
+      mouse.x = -2000;
+      mouse.y = -2000;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseleave', handleMouseLeave);
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -70,58 +90,79 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
     resize();
     window.addEventListener('resize', resize);
 
-    // Initialize 3 distinct aquatic creatures with natural screen-spanning sizes
+    // Scaled down to 1x (half of previous 2x dimensions):
+    // cell = 10.5-11px, segLen = 10.5-11px, waveAmp = 17-18px
+    // Sleek, refined, perfectly proportioned aquatic silhouettes
     const creatures: Creature[] = [
       {
+        id: 'hammerhead-alpha',
         type: 'hammerhead',
-        x: width * 0.75,
-        y: height * 0.32,
-        heading: 2.8,
-        targetHeading: 2.8,
-        speed: 1.5,
-        turnSpeed: 0.015,
+        x: width * 0.72,
+        y: height * 0.35,
+        heading: 2.85,
+        targetHeading: 2.85,
+        speed: 1.35,
+        turnSpeed: 0.016,
         numSegs: 18,
-        cell: 20,
-        segLen: 20,
+        cell: 10.5,
+        segLen: 10.5,
         phase: 0.4,
-        beatFreq: 0.065,
-        waveAmp: 34,
+        beatFreq: 0.068,
+        waveAmp: 17,
       },
       {
+        id: 'great-white-alpha',
         type: 'great_white',
         x: width * 0.28,
-        y: height * 0.72,
-        heading: -0.35,
-        targetHeading: -0.35,
-        speed: 1.7,
-        turnSpeed: 0.012,
+        y: height * 0.68,
+        heading: -0.32,
+        targetHeading: -0.32,
+        speed: 1.45,
+        turnSpeed: 0.013,
         numSegs: 20,
-        cell: 21,
-        segLen: 21,
+        cell: 11,
+        segLen: 11,
         phase: 3.1,
-        beatFreq: 0.06,
-        waveAmp: 36,
+        beatFreq: 0.062,
+        waveAmp: 18,
       },
       {
+        id: 'pilot-1',
         type: 'pilot_fish',
         x: width * 0.18,
-        y: height * 0.22,
-        heading: 0.5,
-        targetHeading: 0.5,
-        speed: 2.2,
-        turnSpeed: 0.025,
+        y: height * 0.24,
+        heading: 0.52,
+        targetHeading: 0.52,
+        speed: 1.85,
+        turnSpeed: 0.026,
         numSegs: 12,
-        cell: 14,
-        segLen: 14,
+        cell: 7.5,
+        segLen: 7.5,
         phase: 1.2,
-        beatFreq: 0.09,
-        waveAmp: 22,
+        beatFreq: 0.092,
+        waveAmp: 11,
+      },
+      {
+        id: 'pilot-2',
+        type: 'pilot_fish',
+        x: width * 0.21,
+        y: height * 0.28,
+        heading: 0.55,
+        targetHeading: 0.55,
+        speed: 1.78,
+        turnSpeed: 0.024,
+        numSegs: 11,
+        cell: 7.0,
+        segLen: 7.0,
+        phase: 1.55,
+        beatFreq: 0.095,
+        waveAmp: 10,
       },
     ];
 
     const bubbles: Bubble[] = [];
 
-    // Helper: Draw single stylized ASCII tile
+    // Helper: Draw single stylized ASCII tile (1x scale, rounded squircle with crisp glyph)
     const drawTile = (
       tx: number,
       ty: number,
@@ -134,17 +175,17 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
       ctx.translate(tx, ty);
       ctx.rotate(angle);
 
-      const r = Math.max(2, size * 0.2);
+      const r = Math.max(1.8, size * 0.2);
       const half = size / 2;
 
-      // Drop subtle shadow for depth
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.06)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetY = 2;
+      // Subtle ambient elevation shadow
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.05)';
+      ctx.shadowBlur = 2.5;
+      ctx.shadowOffsetY = 1;
 
       ctx.fillStyle = palette.bg;
       ctx.strokeStyle = palette.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 0.8;
 
       ctx.beginPath();
       if (typeof ctx.roundRect === 'function') {
@@ -155,10 +196,11 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
       ctx.fill();
       ctx.stroke();
 
-      // Clear shadow before drawing glyph
+      // Draw centered glyph in crisp contrast
       ctx.shadowColor = 'transparent';
       ctx.fillStyle = palette.text;
-      ctx.fillText(glyph, 0, 0.5);
+      ctx.font = `bold ${Math.max(6, Math.floor(size * 0.68))}px ui-monospace, SFMono-Regular, Consolas, monospace`;
+      ctx.fillText(glyph, 0, 0.4);
 
       ctx.restore();
     };
@@ -171,7 +213,7 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
         const bubble = bubbles[b];
         bubble.x += bubble.vx;
         bubble.y += bubble.vy;
-        bubble.alpha *= 0.96;
+        bubble.alpha *= 0.955;
         bubble.life++;
 
         if (bubble.life > bubble.maxLife || bubble.alpha < 0.02) {
@@ -195,16 +237,30 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
         c.phase += c.beatFreq;
 
         // Tail stroke creates pulsed forward thrust surges (accelerates at mid-stroke)
-        const thrustSurge = Math.pow(Math.abs(Math.cos(c.phase)), 1.5) * 0.55;
+        const thrustSurge = Math.pow(Math.abs(Math.cos(c.phase)), 1.5) * 0.45;
         const currentSpeed = c.speed + thrustSurge;
 
+        // Subtle interactive mouse repulsion / water currents
+        if (mouse.active) {
+          const mdx = c.x - mouse.x;
+          const mdy = c.y - mouse.y;
+          const mdist = Math.hypot(mdx, mdy);
+          if (mdist < 140 && mdist > 1) {
+            const avoidAngle = Math.atan2(mdy, mdx);
+            let dAngle = avoidAngle - c.heading;
+            while (dAngle > Math.PI) dAngle -= Math.PI * 2;
+            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
+            c.targetHeading += dAngle * 0.05;
+          }
+        }
+
         // Smooth natural steering wander
-        if (Math.random() < 0.015) {
-          c.targetHeading += (Math.random() - 0.5) * 0.7;
+        if (Math.random() < 0.014) {
+          c.targetHeading += (Math.random() - 0.5) * 0.6;
         }
 
         // Avoid screen edges gently
-        const margin = 120;
+        const margin = 90;
         if (c.x < margin) c.targetHeading = Math.abs(c.targetHeading);
         if (c.x > width - margin) c.targetHeading = Math.PI - Math.abs(c.targetHeading);
         if (c.y < margin) c.targetHeading = Math.abs(c.targetHeading) + 0.3;
@@ -227,7 +283,7 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
         if (c.y > height + totalLen) c.y = -totalLen;
 
         // Head counter-yaw: head oscillates slightly out of phase with tail
-        const headYaw = -Math.sin(c.phase) * 0.07;
+        const headYaw = -Math.sin(c.phase) * 0.06;
 
         // 3. Compute organic spine vertebrae trailing BEHIND the snout
         const spine: { x: number; y: number; angle: number; waveOffset: number }[] = [];
@@ -235,12 +291,12 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
         for (let i = 0; i < c.numSegs; i++) {
           const t = i / c.numSegs; // 0 at head, 1 at tail
           // Retrograde travelling wave along spine (phase lag increases backward)
-          const waveLag = i * 0.45;
-          // Wave amplitude is near 0 at snout, growing strongly toward caudal fin
+          const waveLag = i * 0.44;
+          // Wave amplitude is near 0 at snout, growing smoothly toward caudal fin
           const waveOffset = Math.sin(c.phase - waveLag) * Math.pow(t, 1.45) * c.waveAmp;
 
           // Head points forward; body curves with wave
-          const segAngle = c.heading + headYaw * (1 - t) + Math.cos(c.phase - waveLag) * 0.3 * Math.pow(t, 1.2);
+          const segAngle = c.heading + headYaw * (1 - t) + Math.cos(c.phase - waveLag) * 0.28 * Math.pow(t, 1.2);
 
           // Position trails backwards from head (c.x, c.y) along the heading
           const baseX = c.x - Math.cos(c.heading) * (i * c.segLen);
@@ -270,23 +326,22 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
         }
 
         // 4. Emit wake bubbles and turbulence ripples from tail tip
-        if (Math.random() < 0.22) {
+        if (Math.random() < 0.2) {
           const tail = spine[c.numSegs - 1];
           bubbles.push({
-            x: tail.x + (Math.random() - 0.5) * 8,
-            y: tail.y + (Math.random() - 0.5) * 8,
-            vx: -Math.cos(tail.angle) * 0.8 + (Math.random() - 0.5) * 0.4,
-            vy: -Math.sin(tail.angle) * 0.8 + (Math.random() - 0.5) * 0.4,
+            x: tail.x + (Math.random() - 0.5) * 6,
+            y: tail.y + (Math.random() - 0.5) * 6,
+            vx: -Math.cos(tail.angle) * 0.7 + (Math.random() - 0.5) * 0.3,
+            vy: -Math.sin(tail.angle) * 0.7 + (Math.random() - 0.5) * 0.3,
             char: ['o', '°', '·', '~', 'x'][Math.floor(Math.random() * 5)],
-            size: Math.floor(9 + Math.random() * 6),
-            alpha: 0.35,
+            size: Math.floor(7 + Math.random() * 4),
+            alpha: 0.32,
             life: 0,
-            maxLife: 45 + Math.floor(Math.random() * 30),
+            maxLife: 40 + Math.floor(Math.random() * 25),
           });
         }
 
         // 5. Render 2D Anatomical Tile Silhouettes
-        ctx.font = `bold ${Math.floor(c.cell * 0.65)}px ui-monospace, SFMono-Regular, Consolas, monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -336,9 +391,9 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
           } else {
             // Agile pilot fish
             if (i <= 2) bodyHw = i + 1;
-            else if (i <= 6) bodyHw = 3;
-            else if (i <= 9) bodyHw = 2;
-            else bodyHw = Math.round(1 + ((i - 9) / 3) * 2.5); // fan tail
+            else if (i <= 6) bodyHw = 2;
+            else if (i <= 8) bodyHw = 2;
+            else bodyHw = Math.round(1 + ((i - 8) / 3) * 2.2); // fan tail
           }
 
           const totalHw = Math.max(bodyHw, bodyHw + pecHw);
@@ -391,7 +446,7 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
             const glyphIdx = (i * 5 + absLat * 3) % GLYPHS.length;
             const glyph = isHammerTBar && absLat === bodyHw ? '•' : GLYPHS[glyphIdx];
 
-            drawTile(tx, ty, seg.angle, c.cell - 2, palette, glyph);
+            drawTile(tx, ty, seg.angle, c.cell - 1.2, palette, glyph);
           }
         }
       });
@@ -404,6 +459,8 @@ export default function AsciiSharkMotion({ className = '' }: { className?: strin
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 

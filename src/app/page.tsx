@@ -132,18 +132,18 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-[#F9F9F7]/90 backdrop-blur-md border-b border-dashed border-[#DCDAD4]">
         <div className="max-w-[1240px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group" title="Synora Home">
-            <span className="w-5 h-5 bg-[#1A1A1A] flex items-center justify-center text-white text-[11px] font-bold rounded-sm tracking-tighter group-hover:scale-105 transition-transform">
+            <span className="w-5 h-5 bg-[#1A1A1A] flex items-center justify-center text-white text-[11px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:rotate-45 group-hover:scale-110 transition-all duration-300">
               ■
             </span>
-            <span className="font-bold tracking-tight text-lg text-[#1A1A1A]">SYNORA</span>
+            <span className="font-bold tracking-tight text-lg text-[#1A1A1A] group-hover:text-black transition-colors">SYNORA</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-[13px] text-[#666666]">
-            <a href="#how-it-works" className="hover:text-[#1A1A1A] transition-colors">How it works</a>
-            <a href="#platform" className="hover:text-[#1A1A1A] transition-colors">Intelligence Core</a>
-            <a href="#solutions" className="hover:text-[#1A1A1A] transition-colors">Research Solutions</a>
-            <a href="#security" className="hover:text-[#1A1A1A] transition-colors">Sovereignty</a>
-            <a href="#features" className="hover:text-[#1A1A1A] transition-colors">Signature Pillars</a>
+            <a href="#how-it-works" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">How it works</a>
+            <a href="#platform" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Intelligence Core</a>
+            <a href="#solutions" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Research Solutions</a>
+            <a href="#security" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Sovereignty</a>
+            <a href="#features" className="hover:text-[#1A1A1A] hover:-translate-y-0.5 transition-all">Signature Pillars</a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -155,10 +155,10 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/dashboard"
-              className="bg-[#1A1A1A] hover:bg-[#333333] text-white text-[13px] font-medium px-4 py-2 rounded-md transition-all flex items-center gap-1.5 shadow-sm"
+              className="bg-[#1A1A1A] hover:bg-[#333333] text-white text-[13px] font-medium px-4 py-2 rounded-md transition-all flex items-center gap-1.5 shadow-sm group hover:shadow-md"
             >
               Open workspace
-              <ArrowRight size={13} />
+              <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
@@ -167,8 +167,9 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative pt-16 pb-20 border-b border-dashed border-[#DCDAD4] overflow-hidden">
         <div className="max-w-[1240px] mx-auto px-6 text-center">
-          <div className="inline-block text-[11px] font-mono tracking-widest text-[#737373] uppercase mb-4">
-            Cross-Notebook Intelligence & Autonomous Research Studio
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAE8E0]/70 border border-[#D5D3CB] text-[11px] font-mono tracking-widest text-[#555] uppercase mb-4 shadow-2xs hover:bg-[#EAE8E0] transition-colors cursor-default animate-float-gentle">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A]"></span>
+            <span>Cross-Notebook Intelligence & Autonomous Research Studio</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-normal tracking-tight text-[#1A1A1A] max-w-4xl mx-auto leading-[1.08]">
@@ -177,14 +178,14 @@ export default function LandingPage() {
           </h1>
 
           {/* Stippled Mountain Peak Engraving */}
-          <div className="relative my-8 sm:my-10 max-w-[560px] mx-auto flex justify-center">
+          <div className="relative my-8 sm:my-10 max-w-[560px] mx-auto flex justify-center animate-float-slow">
             <Image
               src="/illustrations/hero_mountain.png"
               alt="Hand-drawn stippled mountain peak"
               width={560}
               height={360}
               priority
-              className="w-full max-w-[500px] h-auto object-contain filter contrast-105"
+              className="w-full max-w-[500px] h-auto object-contain filter contrast-105 hover:scale-103 transition-transform duration-500"
             />
           </div>
 
@@ -197,16 +198,16 @@ export default function LandingPage() {
             <div className="flex items-center gap-3 w-full md:w-auto">
               <Link
                 href="/dashboard"
-                className="bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium px-6 py-2.5 rounded-md transition-all shadow-sm flex items-center gap-2"
+                className="bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium px-6 py-2.5 rounded-md transition-all shadow-sm flex items-center gap-2 group hover:shadow-md"
               >
                 Start research session
-                <ArrowRight size={14} />
+                <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
               <a
                 href="#how-it-works"
-                className="text-sm font-medium text-[#1A1A1A] hover:text-[#555] px-4 py-2.5 transition-colors flex items-center gap-1.5"
+                className="text-sm font-medium text-[#1A1A1A] hover:text-[#555] px-4 py-2.5 transition-colors flex items-center gap-1.5 group"
               >
-                Explore intelligence <ArrowUpRight size={14} />
+                Explore intelligence <ArrowUpRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             </div>
           </div>
@@ -233,18 +234,18 @@ export default function LandingPage() {
             </div>
 
             {/* Step 1: Connect */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] transition-colors">
+            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
               <div className="h-44 flex items-center justify-center mb-6">
                 <Image
                   src="/illustrations/step_capture.png"
                   alt="Surveyor tripod instrument"
                   width={160}
                   height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-105 transition-transform"
+                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
                 />
               </div>
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1">01</div>
+                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">01</div>
                 <h3 className="text-lg font-semibold mb-2">Connect</h3>
                 <p className="text-xs text-[#666666] leading-relaxed">
                   Cross-Notebook Intelligence maps concepts, authors, entities, and citations across all your private collections.
@@ -253,18 +254,18 @@ export default function LandingPage() {
             </div>
 
             {/* Step 2: Verify */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] transition-colors">
+            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
               <div className="h-44 flex items-center justify-center mb-6">
                 <Image
                   src="/illustrations/step_pin.png"
                   alt="Triangulation monument milestone"
                   width={160}
                   height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-105 transition-transform"
+                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
                 />
               </div>
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1">02</div>
+                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">02</div>
                 <h3 className="text-lg font-semibold mb-2">Verify</h3>
                 <p className="text-xs text-[#666666] leading-relaxed">
                   Contradiction Detection automatically highlights conflicting claims and pins every conclusion to an exact passage.
@@ -273,18 +274,18 @@ export default function LandingPage() {
             </div>
 
             {/* Step 3: Act */}
-            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] transition-colors">
+            <div className="p-8 sm:p-10 flex flex-col justify-between group hover:bg-[#F4F4F0] hover-lift transition-all duration-300 cursor-pointer">
               <div className="h-44 flex items-center justify-center mb-6">
                 <Image
                   src="/illustrations/step_prove.png"
                   alt="Summit cairn with flag"
                   width={160}
                   height={190}
-                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-105 transition-transform"
+                  className="max-h-36 w-auto object-contain filter contrast-110 group-hover:scale-108 transition-transform duration-300"
                 />
               </div>
               <div>
-                <div className="text-[11px] font-mono text-[#8C8E85] mb-1">03</div>
+                <div className="text-[11px] font-mono text-[#8C8E85] mb-1 group-hover:text-black transition-colors">03</div>
                 <h3 className="text-lg font-semibold mb-2">Act</h3>
                 <p className="text-xs text-[#666666] leading-relaxed">
                   Knowledge-to-Action converts findings into executive reports, presentations, roadmaps, and adaptive study plans.
@@ -316,11 +317,17 @@ export default function LandingPage() {
               </p>
 
               {/* Monospace Interactive Call Record Box matching Image 3 with pixel precision */}
-              <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] font-mono text-[13px] leading-relaxed">
+              <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] font-mono text-[13px] leading-relaxed hover-lift transition-all duration-300">
                 {/* Header */}
                 <div className="flex items-center justify-between pb-3 text-[#7A7C75]">
-                  <span className="font-mono text-[#555] text-sm font-normal">Call record</span>
-                  <span className="text-xs text-[#7A7C75]">call_7f3a2c · 2026-03-14 09:12Z</span>
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="font-mono text-[#555] text-sm font-normal">Call record</span>
+                  </div>
+                  <span className="text-xs text-[#7A7C75] font-mono">call_7f3a2c · 2026-03-14 09:12Z</span>
                 </div>
 
                 <div className="border-t border-[#EFEFEA] my-3" />
@@ -450,9 +457,9 @@ export default function LandingPage() {
                     </div>
                     <button
                       onClick={triggerReplay}
-                      className="text-xs text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1.5 font-sans font-medium transition-colors ml-4 shrink-0"
+                      className="text-xs text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1.5 font-sans font-medium transition-all ml-4 shrink-0 active:scale-95 group/btn"
                     >
-                      <RefreshCw size={12} className={replaying ? 'animate-spin' : ''} />
+                      <RefreshCw size={12} className={`transition-transform ${replaying ? 'animate-spin' : 'group-hover/btn:rotate-180 duration-500'}`} />
                       <span>Replay</span>
                     </button>
                   </div>
@@ -622,17 +629,18 @@ export default function LandingPage() {
             ].map((f) => (
               <div
                 key={f.num}
-                className="bg-white border border-[#E0DED7] rounded-2xl p-6 sm:p-7 shadow-xs hover:border-black/30 hover:shadow-md transition-all group"
+                className="bg-white border border-[#E0DED7] rounded-2xl p-6 sm:p-7 shadow-xs hover:border-black/30 hover-lift transition-all duration-300 group cursor-pointer relative overflow-hidden"
               >
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-transparent group-hover:bg-[#1A1A1A] transition-colors duration-300" />
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono font-bold text-[#8C8E85] group-hover:text-black">
+                  <span className="text-xs font-mono font-bold text-[#8C8E85] group-hover:text-black transition-colors">
                     {f.num}
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F4F4F0] text-[#666] border border-black/[0.05]">
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#F4F4F0] text-[#666] border border-black/[0.05] group-hover:border-black/20 group-hover:bg-[#EAEAE5] transition-all">
                     {f.badge}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2">{f.title}</h3>
+                <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2 group-hover:translate-x-0.5 transition-transform duration-200">{f.title}</h3>
                 <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">{f.desc}</p>
               </div>
             ))}

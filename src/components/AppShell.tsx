@@ -44,14 +44,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <Link
         href={href}
-        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 group ${
           isActive
-            ? 'bg-[#1A1A1A] text-white shadow-xs font-semibold'
-            : 'text-[#61635D] hover:text-[#111] hover:bg-[#EBEBE6]'
+            ? 'bg-[#1A1A1A] text-white shadow-xs font-semibold translate-x-0.5'
+            : 'text-[#61635D] hover:text-[#111] hover:bg-[#EBEBE6] hover:translate-x-1'
         }`}
       >
-        <span className={isActive ? 'text-white' : 'text-[#7A7C75]'}>{icon}</span>
-        <span>{label}</span>
+        <span className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-[#7A7C75]'}`}>
+          {icon}
+        </span>
+        <span className="flex-1 truncate">{label}</span>
       </Link>
     );
   };
@@ -79,7 +81,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 group"
             title="Synora Home (Landing Page)"
           >
-            <span className="w-5 h-5 bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:scale-105 transition-transform">
+            <span className="w-5 h-5 bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold rounded-sm tracking-tighter shadow-xs group-hover:rotate-45 group-hover:scale-110 transition-all duration-300">
               ■
             </span>
             <span className="font-bold tracking-tight text-base text-[#1A1A1A] group-hover:text-black transition-colors">
@@ -195,8 +197,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F4F4F0] border border-black/[0.06] text-[10px] font-mono text-[#7A7C75]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#F4F4F0] border border-black/[0.06] text-[10px] font-mono text-[#7A7C75] shadow-xs hover:border-black/15 transition-all">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+              </span>
               <span>DETERMINISTIC RETRIEVAL</span>
             </div>
 

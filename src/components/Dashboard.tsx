@@ -192,7 +192,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => setModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-[#1A1A1A] hover:bg-black text-white text-xs font-medium transition-all shadow-sm hover:shadow-md active:scale-95 hover:scale-102"
           >
             <Plus size={14} />
             New notebook
@@ -213,7 +213,7 @@ export default function Dashboard() {
             {/* Stacked Frosted Glass Prompt Input Bar */}
             <form
               onSubmit={handlePromptSubmit}
-              className="relative w-full rounded-2xl bg-white/75 hover:bg-white/85 focus-within:bg-white/95 backdrop-blur-xl border border-black/[0.09] shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.9)_inset] transition-all duration-300 p-2.5 sm:p-3"
+              className="relative w-full rounded-2xl bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-xl border border-black/[0.09] focus-within:border-black/25 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.9)_inset] focus-within:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.12),0_0_0_2px_rgba(0,0,0,0.06)] transition-all duration-300 p-2.5 sm:p-3"
             >
               <textarea
                 value={promptInput}
@@ -237,7 +237,7 @@ export default function Dashboard() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     title="Upload PDF or Document"
-                    className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                   >
                     <Plus size={16} />
                   </button>
@@ -253,7 +253,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     title="Voice input"
-                    className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                   >
                     <Mic size={16} />
                   </button>
@@ -267,9 +267,9 @@ export default function Dashboard() {
                   <button
                     type="submit"
                     disabled={!promptInput.trim() || isProcessingPrompt}
-                    className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 disabled:hover:bg-[#1A1A1A] text-white flex items-center justify-center transition-all ml-1 shadow-sm"
+                    className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 disabled:hover:bg-[#1A1A1A] text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send"
                   >
-                    <ArrowUpRight size={15} />
+                    <ArrowUpRight size={15} className="transition-transform duration-200 group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5" />
                   </button>
                 </div>
               </div>
@@ -352,12 +352,12 @@ export default function Dashboard() {
               {/* Blank Add Notebook ShaderCard */}
               <div
                 onClick={() => setModal(true)}
-                className="rounded-[24px] border-2 border-dashed border-[#DCDAD4] hover:border-black/30 p-7 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/60 transition-all duration-300 min-h-[220px] group"
+                className="rounded-[24px] border-2 border-dashed border-[#DCDAD4] hover:border-black/30 p-7 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/80 hover-lift transition-all duration-300 min-h-[220px] group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#EFEFEA] group-hover:bg-[#1A1A1A] text-[#666] group-hover:text-white flex items-center justify-center transition-colors mb-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#EFEFEA] group-hover:bg-[#1A1A1A] text-[#666] group-hover:text-white flex items-center justify-center transition-all duration-300 group-hover:rotate-90 group-hover:scale-110 mb-3 shadow-xs">
                   <Plus size={22} />
                 </div>
-                <h3 className="font-semibold text-base text-[#1E201D] mb-1">Create notebook</h3>
+                <h3 className="font-semibold text-base text-[#1E201D] mb-1 group-hover:translate-y-[-1px] transition-transform">Create notebook</h3>
                 <p className="text-xs text-[#8C8E85] max-w-[200px]">
                   Start with a question, paper, or set of PDFs
                 </p>

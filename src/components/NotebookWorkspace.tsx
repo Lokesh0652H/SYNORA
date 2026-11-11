@@ -249,7 +249,7 @@ export default function NotebookWorkspace() {
                     e.preventDefault();
                     void ask();
                   }}
-                  className="relative w-full rounded-2xl bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-xl border border-black/[0.09] shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.9)_inset] transition-all p-3 text-left"
+                  className="relative w-full rounded-2xl bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-xl border border-black/[0.09] focus-within:border-black/25 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08),0_1px_1px_rgba(255,255,255,0.9)_inset] focus-within:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.12),0_0_0_2px_rgba(0,0,0,0.06)] transition-all duration-300 p-3 text-left"
                 >
                   <textarea
                     autoFocus
@@ -276,7 +276,7 @@ export default function NotebookWorkspace() {
                         type="button"
                         onClick={() => fileRef.current?.click()}
                         title="Upload PDF or Document"
-                        className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                       >
                         <Plus size={16} />
                       </button>
@@ -284,7 +284,7 @@ export default function NotebookWorkspace() {
                       <button
                         type="button"
                         title="Voice dictation"
-                        className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                       >
                         <Mic size={16} />
                       </button>
@@ -297,9 +297,9 @@ export default function NotebookWorkspace() {
                       <button
                         type="submit"
                         disabled={loading || !input.trim()}
-                        className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm"
+                        className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send"
                       >
-                        <ArrowUpRight size={15} />
+                        <ArrowUpRight size={15} className="transition-transform duration-200 group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5" />
                       </button>
                     </div>
                   </div>
@@ -316,9 +316,10 @@ export default function NotebookWorkspace() {
                       <button
                         key={s}
                         onClick={() => ask(s)}
-                        className="text-xs px-3 py-1.5 rounded-full bg-white/80 hover:bg-white text-[#555] hover:text-[#111] border border-black/[0.08] shadow-sm backdrop-blur-md transition-all text-left"
+                        className="text-xs px-3.5 py-1.5 rounded-full bg-white/85 hover:bg-white text-[#555] hover:text-[#111] border border-black/[0.08] shadow-xs hover:shadow-sm hover-lift backdrop-blur-md transition-all text-left flex items-center gap-1 group/chip active:scale-95"
                       >
-                        {s} ↗
+                        <span>{s}</span>
+                        <ArrowUpRight size={11} className="transition-transform duration-200 group-hover/chip:translate-x-0.5 group-hover/chip:-translate-y-0.5 text-[#888] group-hover/chip:text-[#111]" />
                       </button>
                     ))}
                   </div>
@@ -400,7 +401,7 @@ export default function NotebookWorkspace() {
                       e.preventDefault();
                       void ask();
                     }}
-                    className="relative rounded-2xl bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-xl border border-black/[0.09] shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_1px_1px_rgba(255,255,255,0.9)_inset] transition-all p-3"
+                    className="relative rounded-2xl bg-white/85 hover:bg-white/95 focus-within:bg-white backdrop-blur-xl border border-black/[0.09] focus-within:border-black/25 shadow-[0_8px_30px_-6px_rgba(0,0,0,0.06),0_1px_1px_rgba(255,255,255,0.9)_inset] focus-within:shadow-[0_16px_40px_-8px_rgba(0,0,0,0.1),0_0_0_2px_rgba(0,0,0,0.05)] transition-all duration-300 p-3"
                   >
                     <textarea
                       value={input}
@@ -422,7 +423,7 @@ export default function NotebookWorkspace() {
                           type="button"
                           onClick={() => fileRef.current?.click()}
                           title="Add PDF or Document"
-                          className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                         >
                           <Plus size={16} />
                         </button>
@@ -430,7 +431,7 @@ export default function NotebookWorkspace() {
                         <button
                           type="button"
                           title="Voice dictation"
-                          className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-black/[0.06] text-[#60635C] hover:text-[#111] hover:scale-110 active:scale-95 transition-all"
                         >
                           <Mic size={16} />
                         </button>
@@ -443,9 +444,9 @@ export default function NotebookWorkspace() {
                         <button
                           type="submit"
                           disabled={loading || !input.trim()}
-                          className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm"
+                          className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send"
                         >
-                          <ArrowUpRight size={15} />
+                          <ArrowUpRight size={15} className="transition-transform duration-200 group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5" />
                         </button>
                       </div>
                     </div>
