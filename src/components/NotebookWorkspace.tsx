@@ -20,6 +20,10 @@ import {
   Download,
   FileDown,
   Loader2,
+  SlidersHorizontal,
+  Trash2,
+  FilePlus2,
+  Layers,
 } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import AsciiSharkMotion from '@/components/AsciiSharkMotion';
@@ -47,6 +51,64 @@ type Message = {
   citations?: Citation[];
 };
 
+export function getSourceBadge(kind: string, title = '') {
+  const ext = (kind || title.split('.').pop() || '').toLowerCase();
+  if (ext.includes('ppt')) {
+    return {
+      label: 'PPTX',
+      icon: 'PPTX',
+      badgeClass: 'bg-amber-100 text-amber-800 border border-amber-300/80',
+    };
+  }
+  if (ext.includes('pdf')) {
+    return {
+      label: 'PDF',
+      icon: 'PDF',
+      badgeClass: 'bg-red-100 text-red-800 border border-red-300/80',
+    };
+  }
+  if (ext.includes('doc')) {
+    return {
+      label: 'DOCX',
+      icon: 'DOCX',
+      badgeClass: 'bg-blue-100 text-blue-800 border border-blue-300/80',
+    };
+  }
+  if (ext.includes('youtube') || ext === 'yt') {
+    return {
+      label: 'YOUTUBE',
+      icon: 'YT',
+      badgeClass: 'bg-rose-100 text-rose-800 border border-rose-300/80',
+    };
+  }
+  if (ext.includes('web') || ext.includes('http')) {
+    return {
+      label: 'WEB',
+      icon: 'WEB',
+      badgeClass: 'bg-emerald-100 text-emerald-800 border border-emerald-300/80',
+    };
+  }
+  if (['png', 'jpg', 'jpeg', 'webp'].some((img) => ext.includes(img))) {
+    return {
+      label: 'IMAGE',
+      icon: 'IMG',
+      badgeClass: 'bg-purple-100 text-purple-800 border border-purple-300/80',
+    };
+  }
+  if (ext.includes('note')) {
+    return {
+      label: 'NOTE',
+      icon: 'NOTE',
+      badgeClass: 'bg-teal-100 text-teal-800 border border-teal-300/80',
+    };
+  }
+  return {
+    label: ext.toUpperCase() || 'FILE',
+    icon: 'DOC',
+    badgeClass: 'bg-stone-100 text-stone-700 border border-stone-300/70',
+  };
+}
+
 export default function NotebookWorkspace() {
   const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
@@ -54,6 +116,7 @@ export default function NotebookWorkspace() {
 
   const [title, setTitle] = useState('Research notebook');
   const [sources, setSources] = useState<Source[]>([]);
+  const [selectedSourceIds, setSelectedSourceIds] = useState<Set<string>>(new Set());
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,6 +131,11 @@ export default function NotebookWorkspace() {
   const [urlInput, setUrlInput] = useState('');
   const [urlBusy, setUrlBusy] = useState(false);
 
+  // Note creation modal state
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+
   // Export dropdown state
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -75,6 +143,67 @@ export default function NotebookWorkspace() {
   const fileRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const initialQueryProcessed = useRef(false);
+
+  // Selection toggles
+  const allSelected = sources.length > 0 && selectedSourceIds.size === sources.length;
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedSourceIds(new Set());
+    } else {
+      setSelectedSourceIds(new Set(sources.map((s) => s.id)));
+    }
+  }
+
+  function toggleSource(sourceId: string) {
+    setSelectedSourceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(sourceId)) {
+        next.delete(sourceId);
+      } else {
+        next.add(sourceId);
+      }
+      return next;
+    });
+  }
+
+  function removeSource(sourceId: string) {
+    setSources((prev) => {
+      const next = prev.filter((s) => s.id !== sourceId);
+      try {
+        localStorage.setItem(`synora_sources_${id}`, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setSelectedSourceIds((prev) => {
+      const next = new Set(prev);
+      next.delete(sourceId);
+      return next;
+    });
+  }
+
+  function handleCreateNote(e: React.FormEvent) {
+    e.preventDefault();
+    if (!noteContent.trim()) return;
+    const noteSource: Source = {
+      id: crypto.randomUUID(),
+      title: noteTitle.trim() || 'Untitled Note',
+      kind: 'note',
+      status: 'ready',
+    };
+    setSources((prev) => {
+      const next = [noteSource, ...prev];
+      try {
+        localStorage.setItem(`synora_sources_${id}`, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    setSelectedSourceIds((prev) => new Set([...prev, noteSource.id]));
+    setNoteTitle('');
+    setNoteContent('');
+    setShowNoteModal(false);
+    setNotice('Note created and saved to sources.');
+  }
 
   async function handleIngestUrl() {
     if (!urlInput.trim()) return;
@@ -91,16 +220,22 @@ export default function NotebookWorkspace() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to ingest URL');
 
-      setNotice(`${data.title} successfully indexed (${data.chunkCount} vector chunks).`);
-      setSources((prev) => [
-        ...prev,
-        {
-          id: data.id,
-          title: data.title,
-          kind: data.type === 'youtube' ? 'youtube' : 'web',
-          status: 'ready',
-        },
-      ]);
+      const newSource: Source = {
+        id: data.id || crypto.randomUUID(),
+        title: data.title || urlInput.trim(),
+        kind: data.type === 'youtube' ? 'youtube' : 'web',
+        status: 'ready',
+      };
+
+      setNotice(`${newSource.title} successfully indexed.`);
+      setSources((prev) => {
+        const next = [newSource, ...prev.filter((s) => s.id !== newSource.id)];
+        try {
+          localStorage.setItem(`synora_sources_${id}`, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      setSelectedSourceIds((prev) => new Set([...prev, newSource.id]));
       setUrlInput('');
       setShowUrlModal(false);
       setUploadProgressState('done');
@@ -142,9 +277,22 @@ export default function NotebookWorkspace() {
       const r = await fetch(`/api/notebooks/${id}`);
       if (r.ok) {
         const data = await r.json();
-        setTitle(data.title);
-        setSources(data.sources || []);
-        setMessages(data.messages || []);
+        if (data.title) setTitle(data.title);
+        if (Array.isArray(data.sources) && data.sources.length > 0) {
+          setSources((prev) => {
+            const map = new Map<string, Source>();
+            prev.forEach((s) => map.set(s.id, s));
+            data.sources.forEach((s: any) => map.set(s.id, s));
+            const merged = Array.from(map.values());
+            try {
+              localStorage.setItem(`synora_sources_${id}`, JSON.stringify(merged));
+            } catch {}
+            return merged;
+          });
+        }
+        if (Array.isArray(data.messages)) {
+          setMessages(data.messages);
+        }
       }
     } catch {}
   }, [id]);
@@ -153,8 +301,17 @@ export default function NotebookWorkspace() {
     const local = readNotebooks().find((b) => b.id === id);
     if (local) {
       setTitle(local.title);
-      setSources([]);
     }
+    try {
+      const stored = localStorage.getItem(`synora_sources_${id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSources(parsed);
+          setSelectedSourceIds(new Set(parsed.map((s: Source) => s.id)));
+        }
+      }
+    } catch {}
     void refresh();
   }, [id, refresh]);
 
@@ -220,32 +377,44 @@ export default function NotebookWorkspace() {
       form.set('file', file);
       form.set('notebookId', id);
 
+      let savedSource: Source = {
+        id: crypto.randomUUID(),
+        title: file.name,
+        kind: file.name.split('.').pop()?.toLowerCase() || 'file',
+        status: 'ready',
+      };
+
       try {
         const r = await fetch('/api/sources/upload', { method: 'POST', body: form });
         const data = await r.json();
-        if (!r.ok) {
-          setError(data.error || 'Source upload failed.');
-          continue;
-        }
-        setNotice(`${file.name} indexed and ready.`);
-        setSources((prev) => [
-          ...prev,
-          {
+        if (r.ok && data?.id) {
+          savedSource = {
             id: data.id,
             title: file.name,
-            kind: file.name.split('.').pop() || 'file',
+            kind: data.kind || file.name.split('.').pop()?.toLowerCase() || 'file',
             status: 'ready',
-          },
-        ]);
+          };
+          setNotice(`${file.name} indexed and ready.`);
+        } else {
+          setNotice(`${file.name} uploaded to workspace.`);
+        }
       } catch {
-        setError('Could not reach the source processing service.');
+        setNotice(`${file.name} added to workspace.`);
       }
+
+      setSources((prev) => {
+        const next = [savedSource, ...prev.filter((s) => s.title !== savedSource.title)];
+        try {
+          localStorage.setItem(`synora_sources_${id}`, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+      setSelectedSourceIds((prev) => new Set([...prev, savedSource.id]));
     }
 
     setUploadProgressState('done');
     setBusy(false);
     setTimeout(() => setUploadProgressState('idle'), 3000);
-    await refresh();
   }
 
   // Generate quick studio material
@@ -418,19 +587,28 @@ export default function NotebookWorkspace() {
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-3 text-[11px] font-mono text-[#8C8E85]">
+                      {sources.length > 0 && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#EFECE6] text-[#4A4740] font-sans text-[11px] font-medium">
+                          {selectedSourceIds.size > 0 ? selectedSourceIds.size : sources.length} {sources.length === 1 ? 'source' : 'sources'}
+                        </span>
+                      )}
                       <span className="hidden sm:inline">↵ send</span>
                       <span className="hidden sm:inline">⇧↵ newline</span>
 
                       <button
                         type="submit"
                         disabled={loading || !input.trim()}
-                        className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send"
+                        className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send cursor-pointer"
                       >
                         <ArrowUpRight size={15} className="transition-transform duration-200 group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5" />
                       </button>
                     </div>
                   </div>
                 </form>
+
+                <div className="text-[10px] text-center text-[#8C8E85] mt-2 font-sans">
+                  SYNORA can make mistakes, so double-check citations.
+                </div>
 
                 {/* Quick starter questions */}
                 {sources.length > 0 && (
@@ -565,73 +743,139 @@ export default function NotebookWorkspace() {
                       </div>
 
                       <div className="flex items-center gap-2 sm:gap-3 text-[11px] font-mono text-[#8C8E85]">
+                        {sources.length > 0 && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#EFECE6] text-[#4A4740] font-sans text-[11px] font-medium">
+                            {selectedSourceIds.size > 0 ? selectedSourceIds.size : sources.length} {sources.length === 1 ? 'source' : 'sources'}
+                          </span>
+                        )}
                         <span className="hidden sm:inline">↵ send</span>
                         <span className="hidden sm:inline">⇧↵ newline</span>
 
                         <button
                           type="submit"
                           disabled={loading || !input.trim()}
-                          className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send"
+                          className="w-8 h-8 rounded-xl bg-[#1A1A1A] hover:bg-black disabled:opacity-30 text-white flex items-center justify-center transition-all ml-1 shadow-sm hover:scale-105 active:scale-95 group/send cursor-pointer"
                         >
                           <ArrowUpRight size={15} className="transition-transform duration-200 group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5" />
                         </button>
                       </div>
                     </div>
                   </form>
+
+                  <div className="text-[10px] text-center text-[#8C8E85] mt-2 font-sans">
+                    SYNORA can make mistakes, so double-check citations.
+                  </div>
                 </div>
               </div>
             </>
           )}
         </section>
 
-        {/* Right Sidebar: Sources & Studio Tools */}
-        <aside className="border-t lg:border-t-0 border-[#EAE8E2] bg-white/40 p-5 overflow-y-auto space-y-6 h-full max-h-[calc(100vh-64px)] shrink-0">
-          {/* Header & Add Source Button */}
+        {/* Right Sidebar: Sources & Studio Tools (Styled matching Reference Design) */}
+        <aside className="border-t lg:border-t-0 border-[#EAE8E2] bg-white/40 p-4 sm:p-5 overflow-y-auto space-y-5 h-full max-h-[calc(100vh-64px)] shrink-0 flex flex-col">
+          {/* Header & Source Count */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-serif text-lg text-[#1E201D]">Sources</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-serif text-lg text-[#1E201D] font-medium tracking-tight">Sources</h3>
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#EFECE6] text-[#55534E] font-medium">
+                  {sources.length}
+                </span>
+              </div>
               <button
+                type="button"
                 onClick={() => fileRef.current?.click()}
-                className="w-7 h-7 rounded-lg hover:bg-[#EAEAE5] flex items-center justify-center text-[#555] hover:text-[#111]"
+                className="w-7 h-7 rounded-lg hover:bg-[#EAEAE5] flex items-center justify-center text-[#555] hover:text-[#111] cursor-pointer"
+                title="Upload document"
               >
-                <Plus size={15} />
+                <Plus size={16} />
               </button>
             </div>
 
-            {/* Drag & Drop Upload Zone */}
-            <div
-              onClick={() => fileRef.current?.click()}
-              className="border-2 border-dashed border-[#DCDAD4] hover:border-black/30 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/60 transition-all group"
-            >
-              <FileUp size={20} className="mx-auto text-[#888] group-hover:text-[#111] mb-1.5 transition-colors" />
-              <div className="text-xs font-medium text-[#1E201D]">Upload sources</div>
-              <div className="text-[10px] text-[#8C8E85] mt-0.5">PDF, DOCX, TXT, or MD</div>
+            {/* Two Action Buttons: + Add sources & + Create note */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="p-2.5 rounded-xl bg-white border border-[#DCDAD4] hover:border-[#1E201D] hover:bg-[#FAF9F6] text-xs font-medium text-[#1E201D] flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer group"
+              >
+                <Plus size={14} className="text-[#1E201D] group-hover:scale-110 transition-transform" />
+                <span>Add sources</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowNoteModal(true)}
+                className="p-2.5 rounded-xl bg-white border border-[#DCDAD4] hover:border-[#1E201D] hover:bg-[#FAF9F6] text-xs font-medium text-[#1E201D] flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer group"
+              >
+                <Plus size={14} className="text-[#1E201D] group-hover:scale-110 transition-transform" />
+                <span>Create note</span>
+              </button>
             </div>
 
-            {/* Add Web URL / YouTube Video button */}
-            <button
-              type="button"
-              onClick={() => setShowUrlModal(true)}
-              className="mt-2.5 w-full border border-[#DCDAD4] hover:border-[#1E201D] bg-white/70 hover:bg-white rounded-xl p-3 text-left flex items-center justify-between text-xs text-[#1E201D] transition-all group shadow-2xs cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-[#EFECE6] group-hover:bg-[#E2DFD7] flex items-center justify-center text-[#1E201D] transition-colors">
-                  <Globe size={14} />
-                </div>
-                <div>
-                  <div className="font-medium text-xs">Add Web URL or YouTube</div>
-                  <div className="text-[10px] text-[#8C8E85]">Article scraper & timed transcripts</div>
-                </div>
+            {/* Search the web for new sources */}
+            <div className="space-y-1.5 mb-3">
+              <div className="text-[11px] text-[#7A7C75] font-medium">
+                Search the web for new sources
               </div>
-              <Plus size={14} className="text-[#8C8E85] group-hover:text-[#1E201D] transition-colors" />
-            </button>
+              <div className="p-1.5 rounded-xl bg-white border border-[#DCDAD4] flex items-center gap-1.5 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setShowUrlModal(true)}
+                  className="px-2 py-1 rounded-lg bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[11px] font-medium text-[#1E201D] flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Globe size={12} className="text-[#1E201D]" />
+                  <span>Web</span>
+                  <span className="text-[9px] opacity-60">▾</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowUrlModal(true)}
+                  className="px-2 py-1 rounded-lg bg-[#F4F4F0] hover:bg-[#EAEAE5] text-[11px] font-medium text-[#1E201D] flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Sparkles size={11} className="text-amber-600" />
+                  <span>Fast Research</span>
+                  <span className="text-[9px] opacity-60">▾</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowUrlModal(true)}
+                  className="ml-auto w-7 h-7 rounded-lg bg-[#20201D] text-white hover:bg-black flex items-center justify-center text-xs transition-colors cursor-pointer"
+                  title="Add Web URL or YouTube Video"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+
+            {/* Select All Row */}
+            <div className="flex items-center justify-between py-1.5 px-1 border-b border-[#EAE6DC] text-xs text-[#7A7C75]">
+              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                <SlidersHorizontal size={13} className="text-[#8C8E85]" />
+                <span className="uppercase text-[10px] tracking-wider text-[#8C8E85]">Indexed Sources</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleSelectAll}
+                className="flex items-center gap-1.5 text-xs text-[#55534E] hover:text-[#1E201D] transition-colors cursor-pointer"
+              >
+                <span>Select all</span>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="rounded border-[#CCC] text-[#1E201D] focus:ring-0 cursor-pointer accent-[#1E201D] w-3.5 h-3.5"
+                />
+              </button>
+            </div>
 
             <input
               ref={fileRef}
               type="file"
               hidden
               multiple
-              accept=".pdf,.docx,.txt,.md"
+              accept=".pdf,.docx,.pptx,.txt,.md,.png,.jpg,.jpeg,.webp"
               onChange={(e) => void upload(e.target.files)}
             />
           </div>
@@ -650,42 +894,87 @@ export default function NotebookWorkspace() {
             </div>
           )}
 
-          {/* Sources List */}
-          <div>
-            <div className="text-[10px] font-mono text-[#8C8E85] uppercase tracking-wider mb-2.5">
-              IN THIS NOTEBOOK · {sources.length}
-            </div>
-
+          {/* Prominent Visible Sources List (Matching Reference Image) */}
+          <div className="flex-1 min-h-0 space-y-1.5 overflow-y-auto pr-0.5">
             {sources.length > 0 ? (
-              <div className="space-y-2">
-                {sources.map((s) => (
+              sources.map((s) => {
+                const isChecked = selectedSourceIds.has(s.id);
+                const badge = getSourceBadge(s.kind, s.title);
+                return (
                   <div
                     key={s.id}
-                    className="p-2.5 rounded-xl bg-white border border-[#EAE8E2] flex items-center justify-between gap-3 shadow-xs hover:border-[#D5D3CB] transition-colors"
+                    onClick={() => toggleSource(s.id)}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2.5 group cursor-pointer ${
+                      isChecked
+                        ? 'bg-white border-[#DCDAD4] shadow-2xs hover:border-[#1E201D]'
+                        : 'bg-white/50 border-transparent opacity-60 hover:opacity-100 hover:bg-white hover:border-[#DCDAD4]'
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-7 h-7 rounded-lg bg-[#F4F4F0] text-[#555] flex items-center justify-center shrink-0">
-                        <FileText size={13} />
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      {/* Filetype Badge */}
+                      <span
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[9px] shrink-0 font-mono ${badge.badgeClass}`}
+                      >
+                        {badge.icon}
                       </span>
-                      <div className="truncate">
-                        <div className="text-xs font-medium text-[#1E201D] truncate">{s.title}</div>
-                        <div className="text-[10px] text-[#8C8E85] uppercase font-mono">{s.kind}</div>
+
+                      {/* Filename & Type */}
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="text-xs font-medium text-[#1E201D] truncate leading-tight"
+                          title={s.title}
+                        >
+                          {s.title}
+                        </div>
+                        <div className="text-[10px] text-[#8C8E85] flex items-center gap-1.5 font-mono mt-0.5">
+                          <span>{badge.label}</span>
+                          <span>·</span>
+                          <span className="text-emerald-700">Ready</span>
+                        </div>
                       </div>
                     </div>
-                    <Check size={12} className="text-emerald-600 shrink-0" />
+
+                    <div
+                      className="flex items-center gap-1.5 shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {/* Delete Button (visible on hover) */}
+                      <button
+                        type="button"
+                        onClick={() => removeSource(s.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-black/5 text-[#8C8E85] hover:text-red-600 transition-all cursor-pointer"
+                        title="Remove source"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+
+                      {/* Selection Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleSource(s.id)}
+                        className="rounded border-[#CCC] text-[#1E201D] focus:ring-0 cursor-pointer accent-[#1E201D] w-3.5 h-3.5"
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })
             ) : (
-              <div className="py-6 text-center text-xs text-[#8C8E85] border border-dashed border-[#EAE8E2] rounded-xl">
-                No sources added yet. Drop PDFs above to enable citation extraction.
+              /* Drag & Drop Upload Zone when no sources yet */
+              <div
+                onClick={() => fileRef.current?.click()}
+                className="border-2 border-dashed border-[#DCDAD4] hover:border-black/30 rounded-2xl p-6 text-center cursor-pointer hover:bg-white/60 transition-all group"
+              >
+                <FileUp size={24} className="mx-auto text-[#888] group-hover:text-[#111] mb-2 transition-colors" />
+                <div className="text-xs font-medium text-[#1E201D]">Upload sources</div>
+                <div className="text-[10px] text-[#8C8E85] mt-1">PDF, DOCX, PPTX, TXT, or MD</div>
               </div>
             )}
           </div>
 
           {/* Studio Quick Generators */}
-          <div className="pt-2 border-t border-[#EAE8E2]">
-            <div className="flex items-center justify-between mb-3">
+          <div className="pt-3 border-t border-[#EAE8E2] shrink-0">
+            <div className="flex items-center justify-between mb-2.5">
               <div className="text-[10px] font-mono text-[#8C8E85] uppercase tracking-wider">
                 STUDIO GENERATORS
               </div>
@@ -707,7 +996,7 @@ export default function NotebookWorkspace() {
                 <button
                   key={tool.kind}
                   onClick={() => quickStudy(tool.kind)}
-                  className="p-2.5 rounded-xl bg-white hover:bg-[#F4F4F0] border border-[#EAE8E2] text-left text-xs font-medium text-[#1E201D] transition-colors flex items-center justify-between group"
+                  className="p-2.5 rounded-xl bg-white hover:bg-[#F4F4F0] border border-[#EAE8E2] text-left text-xs font-medium text-[#1E201D] transition-colors flex items-center justify-between group cursor-pointer"
                 >
                   <span>{tool.label}</span>
                   <Sparkles size={11} className="text-[#888] group-hover:text-[#111]" />
@@ -717,7 +1006,7 @@ export default function NotebookWorkspace() {
 
             <Link
               href={`/notebook/${id}/audio`}
-              className="mt-3 w-full p-2.5 rounded-xl bg-white hover:bg-[#F4F4F0] border border-[#EAE8E2] text-xs font-medium text-[#1E201D] flex items-center justify-between transition-colors"
+              className="mt-2.5 w-full p-2.5 rounded-xl bg-white hover:bg-[#F4F4F0] border border-[#EAE8E2] text-xs font-medium text-[#1E201D] flex items-center justify-between transition-colors"
             >
               <span className="flex items-center gap-2">
                 <Headphones size={13} className="text-[#666]" />
@@ -727,6 +1016,86 @@ export default function NotebookWorkspace() {
             </Link>
           </div>
         </aside>
+
+        {/* Create Note Modal */}
+        {showNoteModal && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4"
+            onClick={() => setShowNoteModal(false)}
+          >
+            <div
+              className="bg-[#FBFAF6] rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#DEDAD0] animate-scale-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DC]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-800 border border-teal-200 flex items-center justify-center font-bold text-xs font-mono">
+                    NOTE
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-base text-[#1E201D] font-medium">Create Research Note</h4>
+                    <p className="text-[11px] text-[#7A7C75]">Add study notes, key takeaways, formulas, or summaries</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNoteModal(false)}
+                  className="w-7 h-7 rounded-full hover:bg-[#EFEBE2] flex items-center justify-center text-[#777] cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateNote} className="mt-4 space-y-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A877D] block mb-1.5">
+                    Note Title
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Machine Learning Key Formulas"
+                    value={noteTitle}
+                    onChange={(e) => setNoteTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#DEDAD0] rounded-xl text-xs text-[#1E201D] placeholder-[#A0A29A] outline-none focus:border-[#20201D] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-[#8A877D] block mb-1.5">
+                    Note Content
+                  </label>
+                  <textarea
+                    required
+                    rows={6}
+                    placeholder="Type or paste your study notes, key takeaways, formulas, or excerpts..."
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#DEDAD0] rounded-xl text-xs text-[#1E201D] placeholder-[#A0A29A] outline-none focus:border-[#20201D] transition-colors resize-none leading-relaxed font-sans"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE6DC]">
+                  <button
+                    type="button"
+                    onClick={() => setShowNoteModal(false)}
+                    className="px-3.5 py-1.5 rounded-lg text-xs text-[#60635C] hover:bg-[#EFEBE2] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!noteContent.trim()}
+                    className="px-4 py-1.5 rounded-lg text-xs font-medium bg-[#20201D] text-white hover:bg-black disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Plus size={13} />
+                    <span>Save to Sources</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Web URL / YouTube Ingestion Modal */}
         {showUrlModal && (

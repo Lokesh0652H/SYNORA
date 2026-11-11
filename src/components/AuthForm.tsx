@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Shield, ArrowRight } from 'lucide-react';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 
@@ -12,6 +12,30 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // If already authenticated, redirect straight to dashboard
+  useEffect(() => {
+    try {
+      const local = localStorage.getItem('synora_auth_user');
+      if (local) {
+        location.href = '/dashboard';
+        return;
+      }
+    } catch {}
+
+    const db = supabaseBrowser();
+    if (db) {
+      db.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) {
+          localStorage.setItem(
+            'synora_auth_user',
+            JSON.stringify({ email: data.session.user.email, id: data.session.user.id })
+          );
+          location.href = '/dashboard';
+        }
+      });
+    }
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +65,12 @@ export default function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       if (mode === 'signup' && !result.data.session) {
         setMessage('Check your email to confirm your account, then return here to sign in.');
       } else {
+        if (result.data.user) {
+          localStorage.setItem(
+            'synora_auth_user',
+            JSON.stringify({ email: result.data.user.email, id: result.data.user.id })
+          );
+        }
         location.href = '/dashboard';
       }
     } catch (e) {

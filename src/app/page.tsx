@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   Play,
   Sun,
   ChevronDown,
+  User,
+  LogOut,
 } from 'lucide-react';
+import { supabaseBrowser } from '@/lib/supabase/browser';
 import Living3DEcosystem from '@/components/living-3d';
 import HeroMountain3D from '@/components/landing/HeroMountain3D';
 import ResearchJourneyInteractive from '@/components/landing/ResearchJourneyInteractive';
@@ -17,6 +20,47 @@ import LearningEcosystemInteractiveSuite from '@/components/landing/LearningEcos
 
 export default function LandingPage() {
   const [lightTheme, setLightTheme] = useState(true);
+  const [authUser, setAuthUser] = useState<{ email?: string; id?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('synora_auth_user');
+      if (stored) {
+        setAuthUser(JSON.parse(stored));
+      }
+    } catch {}
+
+    const db = supabaseBrowser();
+    if (db) {
+      db.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) {
+          const u = { email: data.session.user.email, id: data.session.user.id };
+          setAuthUser(u);
+          localStorage.setItem('synora_auth_user', JSON.stringify(u));
+        }
+      });
+      const { data: authSub } = db.auth.onAuthStateChange((_evt, session) => {
+        if (session?.user) {
+          const u = { email: session.user.email, id: session.user.id };
+          setAuthUser(u);
+          localStorage.setItem('synora_auth_user', JSON.stringify(u));
+        } else {
+          setAuthUser(null);
+          localStorage.removeItem('synora_auth_user');
+        }
+      });
+      return () => authSub.subscription.unsubscribe();
+    }
+  }, []);
+
+  const handleSignOut = async () => {
+    const db = supabaseBrowser();
+    if (db) {
+      await db.auth.signOut();
+    }
+    localStorage.removeItem('synora_auth_user');
+    setAuthUser(null);
+  };
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -91,20 +135,54 @@ export default function LandingPage() {
               <Sun className="w-4 h-4" />
             </button>
 
-            <Link
-              href="/login"
-              className="text-[13px] font-medium text-[#4A4740] hover:text-[#20201D] transition-colors hidden sm:inline-block"
-            >
-              Sign in
-            </Link>
+            {authUser ? (
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFEBE2] hover:bg-[#E2DFD7] text-[#20201D] text-xs font-mono transition-all"
+                  title={authUser.email}
+                >
+                  <span className="w-5 h-5 rounded-full bg-[#20201D] text-white flex items-center justify-center font-bold text-[10px]">
+                    {(authUser.email?.[0] || 'U').toUpperCase()}
+                  </span>
+                  <span className="max-w-[120px] truncate hidden md:inline">{authUser.email}</span>
+                </Link>
 
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#20201D] hover:bg-black text-[#FBFAF6] text-[13px] font-medium shadow-sm hover:shadow-md transition-all active:scale-98"
-            >
-              <span>Get started</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#20201D] hover:bg-black text-[#FBFAF6] text-[13px] font-medium shadow-sm hover:shadow-md transition-all active:scale-98"
+                >
+                  <span>Go to Workspace</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="text-xs text-[#8A877D] hover:text-[#20201D] transition-colors cursor-pointer px-1 py-1"
+                  title="Sign out"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-[13px] font-medium text-[#4A4740] hover:text-[#20201D] transition-colors hidden sm:inline-block"
+                >
+                  Sign in
+                </Link>
+
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#20201D] hover:bg-black text-[#FBFAF6] text-[13px] font-medium shadow-sm hover:shadow-md transition-all active:scale-98"
+                >
+                  <span>Get started</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
